@@ -148,7 +148,7 @@ export default function Home() {
           {/* Right Section */}
           <Reveal direction="right" delay={200}>
             <div className="home-right">
-              <img src="./public/mobile.png" alt="Talk2Doc App Preview" />
+              <img src="/mobile.png" alt="Talk2Doc App Preview" />
             </div>
           </Reveal>
         </div>
