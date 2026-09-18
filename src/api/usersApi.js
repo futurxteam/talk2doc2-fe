@@ -1,6 +1,6 @@
 // src/api/usersApi.js
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://talk2doc-be.onrender.com";
 const API_PREFIX = "/api";
 
 const PROFILE_URL = `${BASE_URL}${API_PREFIX}/profile`;
@@ -11,21 +11,21 @@ const HOSPITAL_URL = `${BASE_URL}${API_PREFIX}/hospital`;
 // Helper
 // =============================
 const handleResponse = async (response) => {
-    const data = await response.json();
+  const data = await response.json();
 
-    if (!response.ok) {
-        throw new Error(data?.error || data?.message || "Something went wrong");
-    }
+  if (!response.ok) {
+    throw new Error(data?.error || data?.message || "Something went wrong");
+  }
 
-    return data;
+  return data;
 };
 
 const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    return {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-    };
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
 };
 
 // =============================
@@ -82,69 +82,69 @@ export const createOrUpdatePatientProfile = async (data) => {
 // ADMIN APIs
 // =============================
 export const getAllPatients = async () => {
-    const response = await fetch(`${ADMIN_URL}/patients`, {
-        headers: getAuthHeaders(),
-    });
+  const response = await fetch(`${ADMIN_URL}/patients`, {
+    headers: getAuthHeaders(),
+  });
 
-    return handleResponse(response);
+  return handleResponse(response);
 };
 
 export const getAllDoctors = async () => {
-    const response = await fetch(`${ADMIN_URL}/doctors`, {
-        headers: getAuthHeaders(),
-    });
+  const response = await fetch(`${ADMIN_URL}/doctors`, {
+    headers: getAuthHeaders(),
+  });
 
-    return handleResponse(response);
+  return handleResponse(response);
 };
 
 export const getUserStats = async () => {
-    const response = await fetch(`${ADMIN_URL}/stats`, {
-        headers: getAuthHeaders(),
-    });
+  const response = await fetch(`${ADMIN_URL}/stats`, {
+    headers: getAuthHeaders(),
+  });
 
-    return handleResponse(response);
+  return handleResponse(response);
 };
 
 export const createDoctorUser = async ({ name, phone }) => {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    const res = await fetch(`${ADMIN_URL}/create-doctor`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name, phone }),
-    });
+  const res = await fetch(`${ADMIN_URL}/create-doctor`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name, phone }),
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (!res.ok) {
-        throw new Error(data.message || "Failed to create doctor");
-    }
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to create doctor");
+  }
 
-    return data;
+  return data;
 };
 
 export const createHospitalUser = async ({ name, phone }) => {
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    const res = await fetch(`${ADMIN_URL}/create-hospital`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name, phone }),
-    });
+  const res = await fetch(`${ADMIN_URL}/create-hospital`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name, phone }),
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (!res.ok) {
-        throw new Error(data.message || "Failed to create hospital");
-    }
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to create hospital");
+  }
 
-    return data;
+  return data;
 };
 
 // =============================
@@ -153,50 +153,50 @@ export const createHospitalUser = async ({ name, phone }) => {
 
 
 export const getHospitalDoctors = async () => {
-    const response = await fetch(`${HOSPITAL_URL}/doctors`, {
-        headers: getAuthHeaders(),
-    });
-    return handleResponse(response);
+  const response = await fetch(`${HOSPITAL_URL}/doctors`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
 };
 
 // =============================
 // HELPER - Decode JWT
 // =============================
 export const getCurrentUser = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
+  const token = localStorage.getItem("token");
+  if (!token) return null;
 
-    try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        return payload; // { id, role, iat, exp }
-    } catch (err) {
-        console.error("Failed to decode token:", err);
-        return null;
-    }
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload; // { id, role, iat, exp }
+  } catch (err) {
+    console.error("Failed to decode token:", err);
+    return null;
+  }
 };
 
 export const saveAssessmentResult = async (payload) => {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("Not logged in");
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not logged in");
 
-    const response = await fetch(`${BASE_URL}/api/user/save`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-    });
+  const response = await fetch(`${BASE_URL}/api/user/save`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
 
-    return handleResponse(response);
+  return handleResponse(response);
 };
 
 
 export const getHospitalProfile = async () => {
-    const response = await fetch(`${HOSPITAL_URL}/profile`, {
-        headers: getAuthHeaders(),
-    });
-    return handleResponse(response);
+  const response = await fetch(`${HOSPITAL_URL}/profile`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(response);
 };
 export const createOrUpdateHospitalProfile = async (data) => {
   const response = await fetch(`${HOSPITAL_URL}/profile`, {
@@ -234,7 +234,7 @@ export const getMyAssessments = async () => {
 export async function getSlots(doctorId, date) {
   const res = await fetch(
     `${BASE_URL}/api/appointments/slots?doctorId=${doctorId}&date=${date}`,
-    { headers:  getAuthHeaders(), }
+    { headers: getAuthHeaders(), }
   );
   return res.json();
 }
@@ -242,7 +242,7 @@ export async function getSlots(doctorId, date) {
 export async function bookAppointment(data) {
   const res = await fetch(`${BASE_URL}/api/appointments/book`, {
     method: "POST",
-    headers:  getAuthHeaders(),
+    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   return res.json();
@@ -250,7 +250,7 @@ export async function bookAppointment(data) {
 
 export async function getMyAppointments() {
   const res = await fetch(`${BASE_URL}/api/appointments/my-appointments`, {
-    headers:  getAuthHeaders(),
+    headers: getAuthHeaders(),
   });
   return res.json();
 }
@@ -275,7 +275,7 @@ export async function getHospitalAppointments() {
 }
 
 export async function updateAppointmentStatus(data) {
- const res = await fetch(`${BASE_URL}/api/appointments/update-status`, {
+  const res = await fetch(`${BASE_URL}/api/appointments/update-status`, {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
