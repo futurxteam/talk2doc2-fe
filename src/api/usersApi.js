@@ -1,6 +1,7 @@
 // src/api/usersApi.js
+import API_BASE_URL from "../config";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = API_BASE_URL;
 const API_PREFIX = "/api";
 
 const PROFILE_URL = `${BASE_URL}${API_PREFIX}/profile`;

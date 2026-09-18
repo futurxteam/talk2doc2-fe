@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import API_BASE_URL from '../../config';
 import { 
   LuSend, 
   LuBot, 
@@ -312,7 +313,7 @@ export default function ChatBox({
   const submitTriage = async (bodyArea, symptomId, treeId, answersMap) => {
     setIsTransitioning(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/triage`, {
+      const res = await fetch(`${API_BASE_URL}/api/triage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bodyArea, symptomId, treeId, answersMap })
@@ -333,7 +334,7 @@ export default function ChatBox({
   const submitStandardRecommendation = async (bodyArea, symptomId, duration, severity) => {
     setIsTransitioning(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/recommend`, {
+      const res = await fetch(`${API_BASE_URL}/api/recommend`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bodyArea, symptomId, duration, severity })

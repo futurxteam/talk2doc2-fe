@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import API_BASE_URL from '../config';
 import { 
   LuActivity, 
   LuStethoscope, 
@@ -76,7 +77,7 @@ export default function SymptomChecker() {
 
   useEffect(() => {
     // Load body parts data
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/bodyparts`)
+    fetch(`${API_BASE_URL}/api/bodyparts`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -89,7 +90,7 @@ export default function SymptomChecker() {
       .finally(() => setLoading(false));
 
     // Load insurance providers for filter dropdown
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/insurance-providers`)
+    fetch(`${API_BASE_URL}/api/auth/insurance-providers`)
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data.providers)) setInsuranceProviders(data.providers);
@@ -106,7 +107,7 @@ export default function SymptomChecker() {
       setBookedAppointment(null);
 
       // 1. Fetch default doctor list
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/triage/doctors?department=${encodeURIComponent(dept)}`)
+      fetch(`${API_BASE_URL}/api/triage/doctors?department=${encodeURIComponent(dept)}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
@@ -156,7 +157,7 @@ export default function SymptomChecker() {
 
     const doFetch = async (lat, lng) => {
       try {
-        const url = `${import.meta.env.VITE_API_BASE_URL}/api/user/nearby?lat=${lat}&lng=${lng}&specialty=${encodeURIComponent(dept || '')}&radius=${radius}&insurance=${encodeURIComponent(insurance)}`;
+        const url = `${API_BASE_URL}/api/user/nearby?lat=${lat}&lng=${lng}&specialty=${encodeURIComponent(dept || '')}&radius=${radius}&insurance=${encodeURIComponent(insurance)}`;
         const res = await fetch(url);
         const data = await res.json();
         if (data.success && data.groups) {

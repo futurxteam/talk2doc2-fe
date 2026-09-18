@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API_BASE_URL from "../config";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -36,7 +37,7 @@ const NearbyClinicsMap = () => {
     try {
       setLoading(true);
       const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/user/nearby?lat=${position[0]}&lng=${position[1]}&name=${nameFilter}&specialty=${encodeURIComponent(specialty || "")}`
+        `${API_BASE_URL}/api/user/nearby?lat=${position[0]}&lng=${position[1]}&name=${nameFilter}&specialty=${encodeURIComponent(specialty || "")}`
       );
 
       const data = await res.json();

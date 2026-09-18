@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "../style/NearbyClinics.css";
 import BookAppointmentWidget from "../BookAppointment";
+import API_BASE_URL from "../../config";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const API_BASE = API_BASE_URL;
 
 export default function NearbyClinics({ specialty, assessmentId }) {
   const [groups, setGroups] = useState(null);
