@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import API_BASE_URL from '../config';
-import { 
-  LuActivity, 
-  LuStethoscope, 
-  LuLayers, 
-  LuShieldCheck, 
-  LuUser, 
-  LuMapPin, 
-  LuCalendar, 
-  LuAward, 
+import {
+  LuActivity,
+  LuStethoscope,
+  LuLayers,
+  LuShieldCheck,
+  LuUser,
+  LuMapPin,
+  LuCalendar,
+  LuAward,
   LuDollarSign,
   LuArrowLeft,
   LuChevronDown,
@@ -95,7 +95,7 @@ export default function SymptomChecker() {
       .then((data) => {
         if (Array.isArray(data.providers)) setInsuranceProviders(data.providers);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // Fetch doctors and trigger location radius check whenever a recommendation is produced
@@ -226,8 +226,8 @@ export default function SymptomChecker() {
       : 'DR';
 
     return (
-      <div 
-        key={doc._id} 
+      <div
+        key={doc._id}
         className={`doctor-card ${isExpanded ? 'is-expanded' : ''}`}
       >
         <div className="doctor-card-main">
@@ -342,8 +342,8 @@ export default function SymptomChecker() {
           </div>
 
           <div className="navbar-actions">
-            <button 
-              className="nav-btn-secondary" 
+            <button
+              className="nav-btn-secondary"
               onClick={() => navigate('/')}
               title="Return to Main Portal"
             >
@@ -352,8 +352,8 @@ export default function SymptomChecker() {
             </button>
 
             {token && (
-              <button 
-                className="nav-btn-primary" 
+              <button
+                className="nav-btn-primary"
                 onClick={() => navigate('/dashboard/patient')}
                 title="View Appointments & Health Records"
               >
@@ -449,8 +449,8 @@ export default function SymptomChecker() {
               <div className="header-text-group">
                 <div className="header-tag">Clinical Referrals & Nearby Hospitals</div>
                 <h2>
-                  {isFallback 
-                    ? `Recommended Physicians for ${currentRecommendation.department} Triage` 
+                  {isFallback
+                    ? `Recommended Physicians for ${currentRecommendation.department} Triage`
                     : `Specialists in ${currentRecommendation.department}`}
                 </h2>
                 <p>Consult with verified partner doctors and nearby hospitals</p>
@@ -463,8 +463,8 @@ export default function SymptomChecker() {
                     <LuCompass className="spinning-compass" size={15} /> Locating nearest clinics...
                   </span>
                 ) : locationStatus === 'granted' ? (
-                  <button 
-                    className="gps-refresh-btn" 
+                  <button
+                    className="gps-refresh-btn"
                     onClick={() => fetchNearbyDoctors(currentRecommendation.department)}
                     title="Refresh GPS Proximity"
                   >
@@ -472,7 +472,7 @@ export default function SymptomChecker() {
                     <span>GPS Radius Active</span>
                   </button>
                 ) : (
-                  <button 
+                  <button
                     className="gps-enable-btn"
                     onClick={() => fetchNearbyDoctors(currentRecommendation.department)}
                   >
@@ -537,14 +537,14 @@ export default function SymptomChecker() {
                     Your consultation for <strong>{bookedAppointment.date?.split('T')[0] || bookedAppointment.date}</strong> at <strong>{bookedAppointment.timeSlot}</strong> has been saved.
                   </p>
                   <div className="success-actions">
-                    <button 
+                    <button
                       className="view-dashboard-btn"
                       onClick={() => navigate('/dashboard/patient')}
                     >
                       <LuCalendar size={15} />
                       <span>View in Patient Dashboard</span>
                     </button>
-                    <button 
+                    <button
                       className="dismiss-btn"
                       onClick={() => setBookedAppointment(null)}
                     >
@@ -597,8 +597,8 @@ export default function SymptomChecker() {
                 <p className="no-doctors-hint">
                   You can consult our <strong>General Medicine</strong> practitioners for an initial clinical evaluation and referral.
                 </p>
-                <button 
-                  className="fallback-btn" 
+                <button
+                  className="fallback-btn"
                   onClick={() => navigate('/appointments')}
                 >
                   <LuCalendar size={16} />

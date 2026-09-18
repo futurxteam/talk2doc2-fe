@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { LuBot, LuX, LuExternalLink, LuActivity } from "react-icons/lu";
 import { getCurrentUser } from "../api/usersApi";
+import API_BASE_URL from "../config";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -30,8 +31,13 @@ export default function Home() {
   const [decisionTrees, setDecisionTrees] = useState({});
 
   useEffect(() => {
-    fetch("/api/bodyparts")
-      .then((res) => res.json())
+    fetch(`${API_BASE_URL}/api/bodyparts`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Unable to load chatbot data (${res.status})`);
+        }
+        return res.json();
+      })
       .then((data) => {
         if (data.success) {
           setBodyPartsData(data.data || {});
@@ -79,7 +85,7 @@ export default function Home() {
                 </button>
                 <button
                   className="btn-secondary"
-                  onClick={openChatGuarded}
+                  onClick={() => window.location.href = '/interview'}
                 >
                   Try AI Chat
                 </button>
@@ -91,12 +97,6 @@ export default function Home() {
             </div>
           </Reveal>
 
-          {/* Floating Try Chat Button */}
-          {!openChat && (
-            <button className="chat-fab" onClick={openChatGuarded}>
-              💬 {t("home.tryChat")}
-            </button>
-          )}
 
           {/* Modern talk2doc Triage Modal */}
           {openChat && (
@@ -113,7 +113,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="modal-header-actions">
-                    <button 
+                    <button
                       className="modal-full-btn"
                       onClick={() => navigate('/interview')}
                       title="Open Full Screen Symptom Checker"
@@ -121,8 +121,8 @@ export default function Home() {
                       <LuExternalLink size={15} />
                       <span>Full View</span>
                     </button>
-                    <button 
-                      className="modal-close-btn" 
+                    <button
+                      className="modal-close-btn"
                       onClick={() => setOpenChat(false)}
                       title="Close"
                     >
@@ -131,16 +131,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="home-chat-modal-body">
-                  <ChatBox
-                    bodyPartsData={bodyPartsData}
-                    followUpQuestions={followUpQuestions}
-                    decisionTrees={decisionTrees}
-                    onRecommendation={(rec) => {
-                      // Recommendation produced
-                    }}
-                  />
-                </div>
+
               </div>
             </div>
           )}
