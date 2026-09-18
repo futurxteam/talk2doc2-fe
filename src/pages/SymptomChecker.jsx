@@ -106,7 +106,7 @@ export default function SymptomChecker() {
       setBookedAppointment(null);
 
       // 1. Fetch default doctor list
-      fetch(`/api/triage/doctors?department=${encodeURIComponent(dept)}`)
+      fetch(`https://talk2doc-be.onrender.com/api/triage/doctors?department=${encodeURIComponent(dept)}`)
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
@@ -156,7 +156,7 @@ export default function SymptomChecker() {
 
     const doFetch = async (lat, lng) => {
       try {
-        const url = `/api/user/nearby?lat=${lat}&lng=${lng}&specialty=${encodeURIComponent(dept || '')}&radius=${radius}&insurance=${encodeURIComponent(insurance)}`;
+        const url = `https://talk2doc-be.onrender.com/api/user/nearby?lat=${lat}&lng=${lng}&specialty=${encodeURIComponent(dept || '')}&radius=${radius}&insurance=${encodeURIComponent(insurance)}`;
         const res = await fetch(url);
         const data = await res.json();
         if (data.success && data.groups) {
