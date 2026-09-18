@@ -312,7 +312,7 @@ export default function ChatBox({
   const submitTriage = async (bodyArea, symptomId, treeId, answersMap) => {
     setIsTransitioning(true);
     try {
-      const res = await fetch('/api/triage', {
+      const res = await fetch('https://talk2doc-be.onrender.com/api/triage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bodyArea, symptomId, treeId, answersMap })
@@ -333,7 +333,7 @@ export default function ChatBox({
   const submitStandardRecommendation = async (bodyArea, symptomId, duration, severity) => {
     setIsTransitioning(true);
     try {
-      const res = await fetch('/api/recommend', {
+      const res = await fetch('https://talk2doc-be.onrender.com/api/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bodyArea, symptomId, duration, severity })

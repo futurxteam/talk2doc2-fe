@@ -76,7 +76,7 @@ export default function SymptomChecker() {
 
   useEffect(() => {
     // Load body parts data
-    fetch('/api/bodyparts')
+    fetch('https://talk2doc-be.onrender.com/api/bodyparts')
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -89,7 +89,7 @@ export default function SymptomChecker() {
       .finally(() => setLoading(false));
 
     // Load insurance providers for filter dropdown
-    fetch('/api/auth/insurance-providers')
+    fetch('https://talk2doc-be.onrender.com/api/auth/insurance-providers')
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data.providers)) setInsuranceProviders(data.providers);
