@@ -1,0 +1,40 @@
+/* Reveal Animation Component Styles */
+
+.reveal {
+    opacity: 0;
+    transition-property: opacity, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+}
+
+/* Direction-specific transforms */
+.reveal-top {
+    transform: translateY(-30px);
+}
+
+.reveal-bottom {
+    transform: translateY(30px);
+}
+
+.reveal-left {
+    transform: translateX(-30px);
+}
+
+.reveal-right {
+    transform: translateX(30px);
+}
+
+/* Visible state */
+.reveal-visible {
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

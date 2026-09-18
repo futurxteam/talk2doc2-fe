@@ -1,0 +1,1215 @@
+/* --- Main Layout & Theming --- */
+:root {
+  --primary-color: #0052cc;
+  --primary-light: #e6f0ff;
+  --secondary-color: #f4f5f7;
+  --border-color: #dfe1e6;
+  --text-color: #172b4d;
+  --text-light: #5e6c84;
+  --success-color: #00875a;
+  --white: #ffffff;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  background-color: var(--secondary-color);
+  font-family: var(--font-family);
+  color: var(--text-color);
+  margin: 0;
+  min-height: 100vh;
+}
+.btn-dont_know.active {
+  background-color: #eeeeee;
+  color: #333;
+  font-weight: bold;
+}
+
+/* --- Interview Layout --- */
+.interview-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 900px;
+  min-height: 600px;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin: 1rem auto;
+}
+
+.interview-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.interview-box {
+  width: 100%;
+  max-width: 500px;
+}
+
+.step-content {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Stepper --- */
+.stepper-container {
+  background-color: var(--secondary-color);
+  padding: 40px 20px;
+  width: 200px;
+  border-right: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 20px;
+  min-height: 60px;
+  color: var(--text-light);
+  transition: color 0.3s ease;
+}
+
+.step-marker {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background-color: var(--white);
+  position: absolute;
+  left: -6px;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.step-label {
+  font-weight: 500;
+}
+
+.step-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 0;
+  height: 100%;
+  width: 2px;
+  background-color: var(--border-color);
+  z-index: 1;
+}
+
+/* Stepper States */
+.step-item.active .step-marker {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: scale(1.2);
+}
+
+.step-item.active .step-label {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.step-item.completed .step-marker {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.step-item.completed:not(:last-child)::before {
+  background-color: var(--success-color);
+}
+
+/* --- Form Elements --- */
+h2, h3, h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+h4 {
+  text-align: left;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* --- Buttons --- */
+.interview-layout button {
+
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: var(--white);
+  transition: all 0.2s ease;
+}
+.interview-layout button:hover {
+  background-color: var(--secondary-color);
+  border-color: #c1c7d0;
+}
+.interview-layout button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.main-btn {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  width: 100%;
+  padding: 14px;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+.main-btn:hover {
+  background-color: #0041a3;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+.nav-buttons.single {
+  justify-content: center;
+}
+
+/* --- Step Specific --- */
+.center {
+  text-align: center;
+}
+
+.lang-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.lang-buttons button.selected {
+  background-color: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.checkbox-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.checkbox-row input {
+  margin-right: 10px;
+}
+.checkbox-row label {
+  cursor: pointer;
+}
+
+/* Habit/Condition Options */
+.check-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.check-item label {
+  font-weight: 500;
+  margin-right: 1rem;
+}
+.options-group {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.option-btn {
+  padding: 6px 14px;
+  font-size: 0.9rem;
+}
+.option-btn.selected {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Symptoms Grid */
+.symptom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 1rem;
+}
+.symptom {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: #ffffff;
+  color: #0f172a;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+/* Hover effect */
+.symptom:hover {
+  background: #eff6ff;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.12);
+}
+
+/* Selected state */
+.symptom.selected {
+  background: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+}
+
+/* Selected hover (slightly darker) */
+.symptom.selected:hover {
+  background: #0041a3;
+  border-color: #0041a3;
+  transform: none;
+}
+
+
+/* Result Box */
+.result-box {
+  background-color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 2rem 0;
+  text-align: left;
+}
+.result-box p {
+  margin: 10px 0;
+  font-size: 1.1rem;
+}
+
+/* --- Mobile Responsive --- */
+@media (max-width: 768px) {
+  .interview-layout {
+    flex-direction: column;
+    min-height: auto;
+    height: auto;
+    margin: 0.5rem;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+
+  .interview-container {
+    padding: 1.5rem;
+  }
+
+  .stepper-container {
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    padding: 1rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    justify-content: space-around;
+  }
+
+  .step-item {
+    padding-left: 0;
+    flex-direction: column;
+    align-items: center;
+    min-height: auto;
+    flex: 1;
+  }
+
+  .step-label {
+    display: none;
+  }
+
+  .step-marker {
+    position: static;
+    margin-bottom: 5px;
+  }
+
+  .step-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background-color: var(--border-color);
+    z-index: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .check-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .symptom-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  button {
+    font-size: 0.95rem;
+    padding: 8px 16px;
+  }
+
+  .main-btn {
+    padding: 12px;
+    font-size: 1rem;
+  }
+}
+/* Mobile step header */
+@media (max-width: 768px) {
+  .mobile-step-header {
+    display: none;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    color: var(--primary-color);
+  }
+}
+
+/* Hide on desktop */
+@media (min-width: 769px) {
+  .mobile-step-header {
+    display: none;
+  }
+}
+/* Hide entire stepper (markers + labels) on mobile */
+@media only screen and (max-width: 768px) {
+  .stepper-container {
+    display: none; /* hides everything inside stepper */
+  }
+}
+
+.habits-grid label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 1rem;
+}
+/* --- Extracted inline styles from interview components --- */
+
+/* select / tag row */
+.select-full {
+  margin-top: 8px;
+  width: 100%;
+}
+
+/* selected tags container & tag style */
+.selected-tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.selected-tags .tag {
+  background: #e0e0e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+.selected-tags .tag button {
+  margin-left: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* small faded text */
+.small-opacity {
+  opacity: 0.7;
+}
+
+/* summary box spacing variant */
+.summary-box--mt {
+  margin-top: 16px;
+}
+
+/* Info / small meta text */
+.info-row {
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* question-box (used in NextSymptom & Questionnaire) */
+.question-box {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 1.8rem 0;
+}
+
+.question-box .question-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 0 0 1rem 0;
+}
+.question-box .question-sub {
+  margin: 0.5rem 0 1rem 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* radio label / input spacing */
+.radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.radio-input {
+  margin-right: 0.5rem;
+}
+
+/* yes/no option buttons used in questionnaire */
+.yesno-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.btn-yes,
+.btn-no {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  min-width: 100px;
+}
+.btn-yes.active {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  font-weight: bold;
+}
+.btn-no.active {
+  background-color: #ffebee;
+  color: #d32f2f;
+  font-weight: bold;
+}
+.btn-no {
+  min-width: 120px;
+  transition: 0.2s;
+}
+
+/* MCQ label style */
+.options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);  /* 2x2 grid */
+  gap: 14px;
+}
+
+/* Hide radio */
+.mcq-label input {
+  display: none;
+}
+
+.mcq-label {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px; /* pill shape */
+  padding: 14px 18px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+    color: #0f172a;   /* ✅ DARK TEXT */
+  transition: all 0.2s ease;
+}
+
+/* Hover */
+.mcq-label:hover {
+  border-color: #2563eb;
+}
+
+/* Selected */
+.mcq-label:has(input:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
+    color: #ffffff;   /* white text ONLY when selected */
+  font-weight: 600;
+}
+
+/* nav buttons spacing helper */
+.nav-buttons--mt {
+  margin-top: 2rem;
+}
+
+/* spinner used in results loading */
+.spinner {
+  margin: 2rem auto;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #d32f2f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* results top card */
+.top-card {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  border: 2px solid #d32f2f;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
+}
+.top-card h2 {
+  margin: 0 0 0.5rem;
+  color: #d32f2f;
+}
+.top-card p.confidence {
+  font-size: 1.3rem;
+  margin: 0.5rem 0;
+}
+.top-card p.recommendation {
+  font-style: italic;
+  color: #b71c1c;
+  font-weight: bold;
+}
+
+/* results list item */
+.result-item {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 0.8rem 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.result-item.first {
+  background: #fff8e1;
+}
+.result-item .row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+}
+.result-item .matched {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0.5rem 0;
+}
+.result-item .recommendation {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #0066cc;
+}
+
+/* score color helpers (apply based on score in JSX) */
+.score-high { color: #d32f2f; }
+.score-medium { color: #ff9800; }
+.score-low { color: #4caf50; }
+
+/* Centered restart button */
+.restart-btn {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+.restart-btn .btn {
+  padding: 0.9rem 2.5rem;
+  font-size: 1.1rem;
+}
+
+/* debug pre formatting */
+.debug-pre {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+/* utility: bold */
+.bold { font-weight: bold; }
+
+/* small muted */
+.muted { font-size: 0.85rem; color: #666; }
+
+/* ===========================
+   Results page styles
+   =========================== */
+
+/* Container & typography */
+.step-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem;
+  color: var(--text-color, #172b4d);
+  background: transparent;
+}
+
+/* Patient info (top-left in screenshot) */
+.patient-info {
+  text-align: left;
+  font-size: 0.95rem;
+  color: var(--text-light, #5e6c84);
+  margin: 0.25rem 0 1.25rem 0;
+}
+
+/* Page title / header */
+.step-content > h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+/* Top card (most likely diagnosis) */
+.top-diagnosis-card {
+  background: linear-gradient(135deg, #fff8f8, #fff0ef);
+  border: 2px solid #d9534f; /* warm red */
+  border-radius: 14px;
+  padding: 28px;
+  margin: 1.25rem 0;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.top-diagnosis-title {
+  margin: 0 0 0.6rem 0;
+  font-size: 2rem;
+  line-height: 1.05;
+  color: #133b6b; /* deep blue-ish for title */
+  font-weight: 700;
+}
+.top-confidence {
+  margin: 0.6rem 0;
+  font-size: 1.05rem;
+  color: #133b6b;
+}
+.top-recommendation {
+  margin: 0.4rem 0 0;
+  color: #6b1b1b;  /* darker red */
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* "Other Possible Conditions" heading */
+.other-cond-title {
+  margin-top: 2rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color, #e6e9ee);
+  padding-bottom: 0.6rem;
+}
+
+/* Results list container */
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+/* Each result item card */
+.result-item {
+  background: #ffffff;
+  border: 1px solid #eaedf0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 12px rgba(16,24,40,0.04);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.result-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(16,24,40,0.08);
+}
+
+/* special top highlight style (if used) */
+.result-item.result-item-top,
+.result-item.first {
+  background: #fffaf0;
+  border-color: #f0e7dc;
+}
+
+/* Row: left = name, right = percentage */
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  font-weight: 600;
+  color: #133b6b;
+}
+.result-row span:first-child {
+  flex: 1 1 auto;
+  line-height: 1.35;
+  font-size: 1rem;
+}
+
+/* Percentage color coding (reuse classes from other css) */
+.score-high { color: #d9534f; }   /* >= 70% */
+.score-medium { color: #f0ad4e; } /* >= 40% */
+.score-low { color: #2a9d6f; }    /* < 40% */
+
+/* Matched & recommendation text */
+.result-matched {
+  margin-top: 0.6rem;
+  font-size: 0.95rem;
+  color: #525f73;
+}
+.result-recommendation {
+  margin-top: 0.6rem;
+  font-size: 0.93rem;
+  color: #0a66c2;
+  font-style: italic;
+}
+
+/* Restart button area */
+.restart-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+.restart-btn {
+  background: var(--primary-color, #0052cc);
+  color: #fff;
+  border: none;
+  padding: 12px 26px;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.restart-btn:hover { opacity: 0.95; }
+
+/* Loader (spinner) */
+.loader-spinner {
+  margin: 2rem auto;
+  width: 48px;
+  height: 48px;
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #d9534f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Error text */
+.error-text {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+/* Debug area */
+.debug-section { margin-top: 2rem; }
+.debug-pre {
+  background: #fbfbfb;
+  border: 1px solid #eee;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  overflow-x: auto;
+}
+
+/* ===========================
+   CSS-only rule: remove main/top from "Other Possible Conditions"
+   ===========================
+   This hides the first item in the .results-list so the top diagnosis
+   shown above is not duplicated inside the "Other Possible Conditions".
+   If your JS already adds a special class to the top item (e.g. .first
+   or .result-item-top), the extra selectors below cover that too.
+*/
+.results-list .result-item:first-child,
+.results-list .result-item.first,
+.results-list .result-item.result-item-top {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .step-content { padding: 1.2rem; }
+  .top-diagnosis-title { font-size: 1.4rem; }
+  .result-row span:first-child { font-size: 0.95rem; }
+  .loader-spinner { width: 36px; height: 36px; border-width: 5px; }
+}
+
+
+.btn-yes,
+.btn-no,
+.btn-dont_know {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 14px 22px;
+    color: #0f172a;   /* ✅ DARK TEXT */
+  min-width: 120px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-yes:hover,
+.btn-no:hover,
+.btn-dont_know:hover {
+  border-color: #2563eb;
+}
+
+/* Active states */
+.btn-yes.active,
+.btn-no.active,
+.btn-dont_know.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Hover effects (optional but nice) */
+.btn-yes:hover { border-color: #2e7d32; }
+.btn-no:hover { border-color: #d32f2f; }
+.btn-dont_know:hover { border-color: #9e9e9e; }
+
+
+.yesno-row {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.options {
+  max-width: 420px;
+}
+
+
+/* =========================
+   GLOBAL BUTTON COLOR SYSTEM
+   ========================= */
+
+/* DEFAULT STATE — white bg, black text */
+button,
+.btn-yes,
+.btn-no,
+.btn-dont_know,
+.mcq-label {
+  background: #ffffff !important;
+  color: #0f172a !important;   /* black / dark */
+  border: 1.5px solid #e5e7eb !important;
+  transition: all 0.18s ease;
+}
+
+/* HOVER STATE — blue bg, white text */
+button:hover,
+.btn-yes:hover,
+.btn-no:hover,
+.btn-dont_know:hover,
+.mcq-label:hover {
+  background: var(--primary-color) !important;  /* BLUE */
+  color: #ffffff !important;                    /* WHITE TEXT */
+  border-color: var(--primary-color) !important;
+}
+
+/* ACTIVE / SELECTED STATE — blue bg, white text */
+button.active,
+button.selected,
+.btn-yes.active,
+.btn-no.active,
+.btn-dont_know.active,
+.mcq-label:has(input:checked) {
+  background: var(--primary-color) !important;  /* BLUE */
+  color: #ffffff !important;                    /* WHITE TEXT */
+  border-color: var(--primary-color) !important;
+  font-weight: 600;
+}
+/* ===========================
+   HABITS PERMISSION LIST STYLE
+   =========================== */
+
+.habits-list {
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Each row */
+.habit-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+
+  padding: 14px 16px;
+
+  font-size: 1rem;
+  font-weight: 500;
+  color: #0f172a;
+
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+/* Hover effect */
+.habit-item:hover {
+  background: #f1f5f9;
+}
+
+/* Checkbox styling */
+.habit-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+/* Checked row highlight */
+.habit-item.checked {
+  background: #eff6ff;
+  border-color: var(--primary-color);
+}
+/* ===============================
+   POPUP / MODAL
+================================ */
+
+/* ===============================
+   POPUP / MODAL (FIXED, NO OVERFLOW)
+================================ */
+
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px; /* 👈 safe margin for small screens */
+}
+
+.popup-box {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+
+  /* 👇 CRITICAL */
+  max-height: calc(100vh - 32px);
+  height: auto;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 20px 20px 16px;
+
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  animation: popupIn 0.25s ease-out;
+
+  overflow: hidden; /* 👈 prevents outer overflow */
+}
+
+/* Title */
+.popup-box h3 {
+  margin: 0 0 6px 0;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Subtitle */
+.popup-box p {
+  margin: 0 0 12px 0;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+/* ===============================
+   SCROLLABLE LIST AREA
+================================ */
+
+.popup-list {
+  flex: 1 1 auto;          /* 👈 TAKE REMAINING SPACE */
+  overflow-y: auto;        /* 👈 INTERNAL SCROLL */
+  padding: 4px 4px;
+  margin-bottom: 12px;
+
+  /* Smooth scrolling */
+  overscroll-behavior: contain;
+}
+
+/* Each checkbox row */
+.popup-box .checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.popup-box .checkbox-row:hover {
+  background: #f1f5f9;
+}
+
+/* Checkbox */
+.popup-box input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-color);
+}
+
+/* ===============================
+   BUTTON BAR (STICKY BOTTOM)
+================================ */
+
+.popup-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  flex-shrink: 0;   /* 👈 NEVER SHRINK */
+}
+
+.popup-actions button {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+
+/* Animation */
+@keyframes popupIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ===============================
+   BODY + SELECTOR LAYOUT
+================================ */
+.body-select-layout {
+  display: flex;
+  flex-direction: column;   /* 👈 BODY TOP, SELECTOR BELOW */
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+
+.bodymap-panel {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+    max-width: 520px;
+   margin: 0 auto; 
+  justify-content: center;
+  align-items: center;
+}
+
+.selector-panel {
+  width: 100%;
+  max-width: 520px;   /* 👈 nice readable width */
+  margin: 0 auto;     /* 👈 center it */
+}
+
+.selector-panel h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+/* ===============================
+   CHIEF COMPLAINT BOX
+================================ */
+
+.chief-complaint-box {
+  margin-top: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+/* ===============================
+   SELECTED SUMMARY
+================================ */
+
+.selected-summary-box {
+  margin-top: 16px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.selected-summary-box h4 {
+  margin-top: 0;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 900px) {
+  .body-select-layout {
+    grid-template-columns: 1fr;
+  }
+}

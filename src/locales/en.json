@@ -1,0 +1,53 @@
+{
+  "home": {
+    "hero": {
+      "titleLine1": "Your Health Assistant,",
+      "titleLine2": "Now in Your Pocket.",
+      "subtitle": "Experience personalized symptom analysis and health anytime, anywhere with"
+    },
+    "features": {
+      "track": "Symptom Tracking on the Go",
+      "history": "Secure Health History Access",
+      "fast": "Quick Access to Results"
+    },
+    "rating": "⭐ 4.8/5 Stars • 50K+ Happy Users",
+    "tryChat": "Try Chat"
+  },
+  
+  "header": {
+    "about": "About Us",
+    "business": "Business",
+    "businessDesc": "Learn more about our business collaborations and partnerships.",
+    "visitAcademy": "Visit FutureAce Academy",
+    "apps": "Apps",
+    "startInterview": "Start Interview",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "login": "Login"
+  }
+,
+
+  "login": {
+
+    "phoneLabel": "Phone Number",
+    "otpLabel": "Enter OTP",
+    "sendOtp": "Send OTP",
+    "sending": "Sending...",
+    "verifyOtp": "Verify OTP",
+    "verifying": "Verifying...",
+    "home": "Home",
+    "noAccount": "Don’t have an account?",
+    "signup": "Sign up for free",
+    "otpSent": "OTP sent successfully! (Use 123 to log in)",
+    "loginSuccess": "Login successful! Welcome",
+      "enterPhone": "Please enter your phone number",
+    "enterOtp": "Please enter the OTP",
+    "phonePlaceholder": "Enter your phone number",
+    "otpPlaceholder": "Enter OTP",
+     "title": "Talk2Doc 24/7",
+  "subtitle": "Consult verified doctors anytime, anywhere. Secure OTP login for fast access."
+
+  }
+
+  
+}

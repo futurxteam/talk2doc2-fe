@@ -1,0 +1,536 @@
+/* Hospitaldash.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}
+
+.dashboard-wrapper {
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.dashboard-container {
+  display: flex;
+  height: 100%;
+}
+
+/* ===== HOSPITAL SIDEBAR ===== */
+.hospital-sidebar {
+  width: 260px;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+  z-index: 50;
+}
+
+/* PROFILE HEADER */
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.sidebar-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #22d3ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 20px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.sidebar-userinfo {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-username {
+  font-weight: 600;
+  color: white;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* NAV LINKS */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.sidebar-link {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  background: transparent;
+  /* ✅ keep transparent */
+  color: white;
+  /* or any highlight color */
+}
+
+.sidebar-link .text {
+  margin-left: 0;
+}
+
+/* LOGOUT */
+.logout-btn {
+  margin-top: auto;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* ===== MAIN CONTENT ===== */
+.dashboard-main {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* MOBILE TOGGLES */
+.mobile-menu-btn {
+  display: none;
+  background: #ffffff;
+  color: rgb(0, 0, 0);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.close-sidebar-mobile {
+  display: none;
+  position: absolute;
+  top: 10px;
+  right: 0;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+}
+
+
+/* ===== PAGE CONTENT STYLES ===== */
+.centered-page {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 40px;
+}
+
+.form-shell {
+  width: 100%;
+  max-width: 800px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.form-shell h2 {
+  margin-top: 0;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #475569;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.btn-primary {
+  background: #0f172a;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.welcome-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  margin-bottom: 25px;
+}
+
+.table-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+}
+
+/* APPOINTMENTS */
+.appointment-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  background: white;
+}
+
+.appointment-summary {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr auto;
+  gap: 15px;
+  cursor: pointer;
+  align-items: center;
+}
+
+.appointment-summary:hover {
+  background: #f8fafc;
+}
+
+.status-pill {
+  color: white;
+  padding: 4px 12px;
+  border-radius: 99px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.appointment-details {
+  padding: 20px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.appointment-actions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.pagination button {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block;
+  }
+
+  .hospital-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .hospital-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .close-sidebar-mobile {
+    display: block;
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  .dashboard-main {
+    padding: 15px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-summary {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+}
+
+
+/* =========================================
+   HOSPITAL DASHBOARD SIDEBAR (MATCH PATIENT)
+========================================= */
+
+.hospital2-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #020617, #0b1220);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  min-height: 100vh;
+  flex-shrink: 0;
+  z-index: 50;
+  transition: transform 0.3s ease;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .hospital2-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    z-index: 1000;
+  }
+
+  .hospital2-sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+.hospital2-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hospital2-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 20px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.hospital2-userinfo {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hospital2-username {
+  font-weight: 600;
+  color: #ffffff;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Close button mobile */
+.hospital2-close-mobile {
+  display: none;
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .hospital2-close-mobile {
+    display: block;
+  }
+}
+
+/* NAV */
+.hospital2-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  margin-top: 10px;
+}
+
+/* LINKS (TEXT ONLY, NO BLOCKS) */
+.hospital2-link {
+  background: transparent;
+  border: none;
+  padding: 6px 0;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  color: #c7d2fe;
+  transition: color 0.18s ease;
+}
+
+/* Hover */
+.hospital2-link:hover {
+  color: #ffffff;
+}
+
+/* Active */
+.hospital2-link.active {
+  color: #60a5fa;
+}
+
+/* Logout */
+.hospital2-logout {
+  margin-top: 18px;
+  color: #f87171;
+}
+
+.hospital2-logout:hover {
+  color: #ef4444;
+}
+
+/* ==============================
+   🔥 FORCE KILL WHITE BUTTONS
+   ============================== */
+
+.hospital2-sidebar button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.hospital2-link {
+  background: transparent !important;
+  color: #c7d2fe !important;
+}
+
+.hospital2-link:hover {
+  background: transparent !important;
+  color: #ffffff !important;
+}
+
+.hospital2-link.active {
+  background: transparent !important;
+  color: #60a5fa !important;
+}
+
+/* Logout */
+.hospital2-logout {
+  background: transparent !important;
+  color: #f87171 !important;
+}
+
+.hospital2-logout:hover {
+  background: transparent !important;
+  color: #ef4444 !important;
+}

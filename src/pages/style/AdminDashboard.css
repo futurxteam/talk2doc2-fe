@@ -1,0 +1,332 @@
+/* ===================================
+   ADMIN DASHBOARD – MODERN FLAT STYLE
+==================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* ===== WRAPPER & CONTAINER ===== */
+.admin-dash-wrapper {
+    height: 100vh;
+    overflow: hidden;
+    background-color: #f8fafc;
+}
+
+.admin-dash-container {
+    display: flex;
+    height: 100%;
+}
+
+/* ===== SIDEBAR ===== */
+.admin-dash-sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #020617, #0b1220);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+    z-index: 50;
+}
+
+/* Hard reset: kill all button backgrounds */
+.admin-dash-sidebar button {
+    background: transparent !important;
+    border: none !important;
+}
+
+.admin-dash-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-dash-sidebar-header h3 {
+    margin: 0;
+    color: #0ea5e9;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ===== NAV ===== */
+.admin-dash-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex: 1;
+    margin-top: 10px;
+}
+
+.admin-dash-nav-link {
+    display: block;
+    width: 100%;
+    padding: 6px 0;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    color: #c7d2fe !important;
+    transition: color 0.18s ease;
+}
+
+.admin-dash-nav-link:hover {
+    color: #ffffff !important;
+}
+
+.admin-dash-nav-link.active {
+    color: #60a5fa !important;
+}
+
+/* ===== LOGOUT ===== */
+.admin-dash-logout {
+    margin-top: 18px;
+    padding: 6px 0;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    color: #f87171 !important;
+    transition: color 0.18s ease;
+}
+
+.admin-dash-logout:hover {
+    color: #ef4444 !important;
+}
+
+/* ===== MOBILE CONTROLS ===== */
+.admin-dash-mobile-toggle {
+    display: none;
+    background: #ffffff !important;
+    color: rgb(0, 0, 0);
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.admin-dash-close-mobile {
+    display: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.admin-dash-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 40;
+}
+
+/* ===== MAIN CONTENT ===== */
+.admin-dash-main {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.admin-dash-welcome-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-dash-welcome-section h2 {
+    margin: 0;
+    color: #1e293b;
+}
+
+/* ===== STATS GRID ===== */
+.admin-dash-stats-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.admin-dash-stat-card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.admin-dash-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.admin-dash-stat-card.clickable {
+    cursor: pointer;
+}
+
+.admin-dash-stat-card h3 {
+    margin: 0 0 10px 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.admin-dash-stat-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.admin-dash-stat-card small {
+    display: block;
+    margin-top: 8px;
+    color: #3b82f6;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* ===== FORMS ===== */
+.admin-dash-create-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.admin-dash-form-group {
+    margin-bottom: 16px;
+}
+
+.admin-dash-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #475569;
+}
+
+.admin-dash-form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.admin-dash-form-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.admin-dash-form-card button {
+    background: #0f172a !important;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.admin-dash-form-card button:hover {
+    background: #1e293b !important;
+}
+
+.admin-dash-form-card button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ===== TABLES ===== */
+.admin-dash-table-section {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-top: 20px;
+}
+
+.admin-dash-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-dash-data-table th,
+.admin-dash-data-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-dash-data-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.admin-dash-data-table td {
+    color: #334155;
+}
+
+/* ===== LOADING ===== */
+.admin-dash-loading {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .admin-dash-mobile-toggle {
+        display: block;
+    }
+
+    .admin-dash-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+    }
+
+    .admin-dash-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .admin-dash-close-mobile {
+        display: block;
+    }
+
+    .admin-dash-overlay {
+        display: block;
+    }
+
+    .admin-dash-main {
+        padding: 15px;
+    }
+
+    .admin-dash-stats-section {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,158 @@
+/* ===============================
+   NEW SIDEBAR – FLAT LIST STYLE (NO BLOCKS)
+================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ===== HARD RESET: KILL ALL BOXES ===== */
+.new-sidebar *,
+.new-sidebar button {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ===== ROOT SIDEBAR ===== */
+.new-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #020617, #0b1220);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  min-height: 100vh;
+  flex-shrink: 0;
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  z-index: 50;
+}
+
+/* ===== MOBILE TOGGLE ===== */
+.new-mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1100;
+  background: #ffffff !important;
+  color: rgb(0, 0, 0);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* ===== OVERLAY ===== */
+.new-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+}
+
+/* ===== HEADER ===== */
+.new-sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.new-sidebar-logo {
+  width: 150px;
+  object-fit: contain;
+}
+
+/* ===== AVATAR ===== */
+.new-sidebar-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.new-sidebar-username {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* ===== NAV ===== */
+.new-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  margin-top: 10px;
+}
+
+/* ===== ALL BUTTONS (FLAT TEXT ITEMS) ===== */
+.new-sidebar-nav button {
+  display: block;
+  width: 100%;
+  padding: 6px 0;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  text-align: left;
+  cursor: pointer;
+  color: #c7d2fe !important;
+  transition: color 0.18s ease;
+}
+
+/* Hover = only text color */
+.new-sidebar-nav button:hover {
+  color: #ffffff !important;
+}
+
+/* Active = blue text */
+.new-sidebar-nav button.active {
+  color: #60a5fa !important;
+}
+
+/* ===== START INTERVIEW (PRIMARY TEXT) ===== */
+.new-sidebar-nav button:first-child {
+  color: #38bdf8 !important;
+  font-weight: 800;
+}
+
+.new-sidebar-nav button:first-child:hover {
+  color: #7dd3fc !important;
+}
+
+/* ===== LOGOUT ===== */
+.new-sidebar-logout {
+  margin-top: 18px;
+  /* stays in list, not pushed to bottom */
+  color: #f87171 !important;
+}
+
+.new-sidebar-logout:hover {
+  color: #ef4444 !important;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+  .new-mobile-toggle {
+    display: block;
+  }
+
+  .new-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+
+  .new-sidebar.open {
+    transform: translateX(0);
+  }
+}

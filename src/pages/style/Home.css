@@ -1,0 +1,713 @@
+/* ========== Import Inter (Notion's font) ========== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ========== Global Fixes ========== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ========== Typography / Base ========== */
+:root {
+  --ui-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --muted-color: #555;
+  --primary-color: #0ea5e9;
+  --secondary-color: #0f766e;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--ui-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #111827;
+  margin: 0;
+  background: #fff;
+  -webkit-text-size-adjust: 100%;
+}
+
+p,
+li,
+button,
+input,
+textarea {
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* ========== General Layout ========== */
+.home-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.home-wrapper header {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* ========== Main Container ========== */
+.home-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom, #e6f7f6, #ffffff);
+  padding: 60px 0;
+}
+
+/* ========== Hero Section Grid ========== */
+.home-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  width: 90%;
+  max-width: 1300px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 auto 80px;
+}
+
+.home-wrapper footer {
+  margin-top: auto;
+  width: 100%;
+  background-color: #f8fafc;
+  text-align: center;
+  padding: 20px 0;
+  color: #555;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* ========== Left Section ========== */
+.home-left h1 {
+  font-family: var(--ui-font);
+  font-size: 48px;
+  color: #1b1b1b;
+  font-weight: 800;
+  margin-bottom: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.home-left p {
+  color: var(--muted-color);
+  font-size: 18px;
+  margin-bottom: 30px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.home-left strong {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* ========== Features List ========== */
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 35px;
+}
+
+.feature-list li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* ========== CTA Buttons ========== */
+.cta-buttons {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 14px 32px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--ui-font);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), #38bdf8);
+  color: white;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* ========== Trust Badge ========== */
+.trust-badge {
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+/* ========== Right Section ========== */
+.home-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-right img {
+  width: 350px;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== How It Works Section ========== */
+.how-it-works {
+  width: 90%;
+  max-width: 1300px;
+  margin: 80px auto;
+  text-align: center;
+}
+
+.how-it-works h2 {
+  font-size: 42px;
+  font-weight: 800;
+  color: #1b1b1b;
+  margin-bottom: 60px;
+  letter-spacing: -0.02em;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+.step-card {
+  background: white;
+  padding: 32px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.step-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.step-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.step-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1b1b1b;
+  margin-bottom: 12px;
+}
+
+.step-card p {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ========== Why Choose Section ========== */
+.why-choose {
+  width: 90%;
+  max-width: 1300px;
+  margin: 80px auto;
+  text-align: center;
+}
+
+.why-choose h2 {
+  font-size: 42px;
+  font-weight: 800;
+  color: #1b1b1b;
+  margin-bottom: 60px;
+  letter-spacing: -0.02em;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+.benefit-card {
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  padding: 32px 24px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color);
+}
+
+.benefit-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.benefit-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1b1b1b;
+  margin-bottom: 8px;
+}
+
+.benefit-card p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+/* ========== Carousel Section ========== */
+.symptom-carousel-section {
+  width: 90%;
+  max-width: 1300px;
+  margin: 80px auto;
+  text-align: center;
+}
+
+.symptom-carousel-section h2 {
+  font-size: 42px;
+  font-weight: 800;
+  color: #1b1b1b;
+  margin-bottom: 40px;
+  letter-spacing: -0.02em;
+}
+
+/* ========== Chat FAB ========== */
+.chat-fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, var(--primary-color), #38bdf8);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.4);
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.chat-fab:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(14, 165, 233, 0.5);
+}
+
+/* ========== Responsive Design ========== */
+@media (max-width: 1024px) {
+
+  .steps-grid,
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .home-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 40px;
+    width: 95%;
+  }
+
+  .home-left h1 {
+    font-size: 36px;
+  }
+
+  .home-left p {
+    font-size: 16px;
+  }
+
+  .feature-list li {
+    justify-content: center;
+  }
+
+  .cta-buttons {
+    justify-content: center;
+  }
+
+  .home-right img {
+    width: 280px;
+    margin-top: 20px;
+  }
+
+  .how-it-works h2,
+  .why-choose h2,
+  .symptom-carousel-section h2 {
+    font-size: 32px;
+  }
+
+  .steps-grid,
+  .benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* ========== Animations ========== */
+.home-left {
+  animation: fadeUp 1s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.home-right img {
+  animation: slideInRight 1.2s ease-out forwards, float 4s ease-in-out infinite;
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Accessibility: respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+
+  .home-left,
+  .home-right img,
+  .btn-primary,
+  .btn-secondary,
+  .step-card,
+  .benefit-card {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ========== Floating Chat FAB ========== */
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 14px 22px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-fab:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(2, 132, 199, 0.5);
+}
+
+/* ========== Home Chat Modal Overlay ========== */
+.home-chat-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.home-chat-modal {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.25);
+  animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.home-chat-modal-header {
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-bot-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-title-group h4 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.modal-title-group span {
+  font-size: 0.74rem;
+  color: #64748b;
+  display: block;
+}
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-full-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.modal-full-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.modal-close-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.home-chat-modal-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-chat-modal-body .duo-chatbox-card {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  height: 100%;
+  max-height: 70vh;
+}
+
+/* ========================================================
+   Mobile Responsive — Home Page
+   ======================================================== */
+
+/* ── Tablet (≤ 768px) ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .home-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 60px 5%;
+  }
+
+  .home-right {
+    display: none;
+  }
+
+  .home-left h1 {
+    font-size: 2rem;
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .why-choose-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-chat-modal {
+    width: 95vw;
+    max-width: 95vw;
+    height: 90vh;
+    max-height: 90vh;
+    border-radius: 16px;
+  }
+
+  .home-chat-modal-body .duo-chatbox-card {
+    max-height: calc(90vh - 62px);
+  }
+}
+
+/* ── Phone (≤ 480px) ───────────────────────────────────── */
+@media (max-width: 480px) {
+  .home-left h1 {
+    font-size: 1.6rem;
+  }
+
+  .home-left p {
+    font-size: 0.9rem;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Full-screen native-app-style chat modal on phones */
+  .home-chat-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .home-chat-modal {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .home-chat-modal-body .duo-chatbox-card {
+    max-height: calc(100vh - 62px);
+  }
+
+  .chat-fab {
+    bottom: 1rem;
+    right: 1rem;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+  }
+
+  .trust-badge {
+    font-size: 12px;
+  }
+}

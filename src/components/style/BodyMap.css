@@ -1,0 +1,59 @@
+.bodymap-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.bodymap-svg {
+  width: 260px;
+  height: auto;
+  max-height: 520px;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+}
+
+/* Default Body SVG Paths */
+.bodymap-svg g[id] path {
+  fill: #334155;
+  stroke: #ffffff;
+  stroke-width: 1px;
+  transition: fill 0.2s ease, stroke 0.2s ease, filter 0.2s ease;
+  pointer-events: visiblePainted;
+}
+
+/* Hover Highlight */
+.bodymap-svg g[id]:hover path {
+  fill: #0284c7;
+  stroke: #38bdf8;
+  stroke-width: 1.5px;
+  filter: drop-shadow(0 0 8px rgba(2, 132, 199, 0.5));
+}
+
+/* Selected Active Body Part */
+.bodymap-svg g[id].selected path {
+  fill: #0284c7 !important;
+  stroke: #38bdf8 !important;
+  stroke-width: 2px !important;
+  filter: drop-shadow(0 0 12px rgba(2, 132, 199, 0.7));
+}
+
+/* Floating Tooltip Pill */
+.bodymap-tooltip {
+  position: absolute;
+  top: -12px;
+  background: #0f172a;
+  color: #38bdf8;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: capitalize;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #1e293b;
+  pointer-events: none;
+  z-index: 10;
+}

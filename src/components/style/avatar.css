@@ -1,0 +1,34 @@
+.avatar-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: #fafafa;
+  border-radius: 1.5rem;
+  box-shadow: 0 12px 30px rgba(0,0,0,.08);
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+/* The overlay paths (transparent) */
+.click-overlay path {
+  transition: fill .2s ease;
+}
+
+/* Hover – subtle highlight */
+.click-overlay path:hover {
+  fill: rgba(0,150,255,.15);
+}
+
+/* Selected – bright red */
+.click-overlay path[data-part].selected {
+  fill: rgba(231,76,60,.3);
+  stroke: #e74c3c;
+  stroke-width: 2;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .avatar-wrapper { padding: .8rem; }
+}

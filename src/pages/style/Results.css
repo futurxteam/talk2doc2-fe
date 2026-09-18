@@ -1,0 +1,37 @@
+.emergency-icon {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.emergency-advice {
+  margin: "12px 0 0";
+  font-weight: 500;
+}
+
+.reasoning-section {
+  margin-top: 32px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.red-flag-note {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.pathway-info {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.debug-section pre {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}

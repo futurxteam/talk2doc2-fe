@@ -1,0 +1,61 @@
+.nearby-container {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.distance-group {
+  margin-bottom: 20px;
+}
+
+.distance-group h4 {
+  margin-bottom: 8px;
+}
+
+.doctor-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.doctor-summary {
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.doctor-summary:hover {
+  background: #f5f5f5;
+}
+
+.doctor-details {
+  padding: 12px;
+  border-top: 1px solid #eee;
+  background: #fcfcfc;
+}
+
+.book-btn {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+
+.book-btn:hover {
+  background: #333;
+}
+
+.muted {
+  color: #666;
+  font-size: 13px;
+}
+
+.expand-btn {
+  font-size: 14px;
+}

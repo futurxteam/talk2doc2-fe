@@ -1,0 +1,60 @@
+/* =========================================
+   NUCLEAR OVERRIDES - MAXIMUM SPECIFICITY
+   Force override ANY global styles
+   ========================================= */
+
+/* Language dropdown buttons - FORCE no blue background */
+.header-site .header-sub-menu .header-sub-menu-btn,
+.header-site .header-nav-menu .header-sub-menu .header-sub-menu-btn,
+button.header-sub-menu-btn,
+.header-nav-item .header-sub-menu button.header-sub-menu-btn {
+    background: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    color: #5f6368 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Hover state */
+.header-site .header-sub-menu .header-sub-menu-btn:hover,
+button.header-sub-menu-btn:hover {
+    background-color: #f8f9fa !important;
+    color: #202124 !important;
+    border: none !important;
+}
+
+/* Active/Focus states - NO BLUE */
+.header-site .header-sub-menu .header-sub-menu-btn:active,
+.header-site .header-sub-menu .header-sub-menu-btn:focus,
+.header-site .header-sub-menu .header-sub-menu-btn:focus-visible,
+button.header-sub-menu-btn:active,
+button.header-sub-menu-btn:focus,
+button.header-sub-menu-btn:focus-visible {
+    background-color: #f8f9fa !important;
+    color: #202124 !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Links in dropdown - no borders */
+.header-site .header-sub-menu .header-sub-menu-link,
+a.header-sub-menu-link {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    background: none !important;
+    color: #5f6368 !important;
+}
+
+.header-site .header-sub-menu .header-sub-menu-link:hover,
+a.header-sub-menu-link:hover {
+    background-color: #f8f9fa !important;
+    color: #202124 !important;
+    border: none !important;
+}

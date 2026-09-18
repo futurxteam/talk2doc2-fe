@@ -1,0 +1,81 @@
+.bodymap-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(14, 165, 233, 0.05) 0%, rgba(248, 250, 252, 0.8) 100%);
+  border-radius: 20px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+}
+
+.bodymap-header {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bodymap-svg {
+  width: 250px;
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.08));
+}
+
+/* Default state of body part paths */
+.bodymap-svg g[id] path {
+  fill: #334155;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: all;
+}
+
+/* Hover highlight */
+.bodymap-svg g[id]:hover path {
+  fill: #0284c7;
+  filter: drop-shadow(0 0 10px rgba(2, 132, 199, 0.8));
+}
+
+/* Selected active part */
+.bodymap-svg g[id].selected path {
+  fill: #0284c7 !important;
+  filter: drop-shadow(0 0 12px rgba(2, 132, 199, 0.9));
+}
+
+/* Tooltip */
+.bodymap-tooltip {
+  position: absolute;
+  top: 15px;
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+  pointer-events: none;
+  border: 1px solid #334155;
+  animation: fadeInTooltip 0.15s ease-out;
+}
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bodymap-hint {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: center;
+  line-height: 1.4;
+}
