@@ -12,6 +12,7 @@ export default function Avatar({ onSelect }) {
             left_hand: "joints", right_hand: "joints",
             left_thigh: "joints", right_thigh: "joints",
             left_leg: "joints", right_leg: "joints",
+
             left_foot: "joints", right_foot: "joints",
         };
         return map[name] || name;
