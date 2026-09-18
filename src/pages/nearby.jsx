@@ -17,7 +17,7 @@ const NearbyClinicsMap = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const params = new URLSearchParams(window.location.search);
-const specialty = params.get("specialty");
+  const specialty = params.get("specialty");
 
 
   // Get user location
@@ -35,9 +35,9 @@ const specialty = params.get("specialty");
 
     try {
       setLoading(true);
-     const res = await fetch(
-  `http://localhost:5000/api/user/nearby?lat=${position[0]}&lng=${position[1]}&name=${nameFilter}&specialty=${encodeURIComponent(specialty || "")}`
-);
+      const res = await fetch(
+        `https://talk2doc-be.onrender.com/api/user/nearby?lat=${position[0]}&lng=${position[1]}&name=${nameFilter}&specialty=${encodeURIComponent(specialty || "")}`
+      );
 
       const data = await res.json();
       setDoctors(data.doctors || []);

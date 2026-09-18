@@ -217,7 +217,7 @@ export const addDoctorByHospital = async (doctorData) => {
 };
 
 export const getMyAssessments = async () => {
-  const res = await fetch("http://localhost:5000/api/user/assessments/my", {
+  const res = await fetch("https://talk2doc-be.onrender.com/api/user/assessments/my", {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },

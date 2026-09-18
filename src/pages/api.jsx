@@ -5,7 +5,7 @@
 // =============================
 // BASE URLS
 // =============================
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://talk2doc-be.onrender.com";
 const API_PREFIX = "/api";
 
 const AUTH_URL = `${BASE_URL}${API_PREFIX}/auth`;

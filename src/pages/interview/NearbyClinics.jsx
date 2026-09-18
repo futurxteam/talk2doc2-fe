@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../style/NearbyClinics.css";
 import BookAppointmentWidget from "../BookAppointment";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://talk2doc-be.onrender.com";
 
 export default function NearbyClinics({ specialty, assessmentId }) {
   const [groups, setGroups] = useState(null);
