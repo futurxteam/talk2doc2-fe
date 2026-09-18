@@ -36,7 +36,7 @@ const NearbyClinicsMap = () => {
     try {
       setLoading(true);
       const res = await fetch(
-        `https://talk2doc-be.onrender.com/api/user/nearby?lat=${position[0]}&lng=${position[1]}&name=${nameFilter}&specialty=${encodeURIComponent(specialty || "")}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/user/nearby?lat=${position[0]}&lng=${position[1]}&name=${nameFilter}&specialty=${encodeURIComponent(specialty || "")}`
       );
 
       const data = await res.json();

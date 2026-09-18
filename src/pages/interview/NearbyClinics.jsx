@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../style/NearbyClinics.css";
 import BookAppointmentWidget from "../BookAppointment";
 
-const API_BASE = "https://talk2doc-be.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export default function NearbyClinics({ specialty, assessmentId }) {
   const [groups, setGroups] = useState(null);

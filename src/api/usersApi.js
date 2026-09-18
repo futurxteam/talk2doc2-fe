@@ -1,6 +1,6 @@
 // src/api/usersApi.js
 
-const BASE_URL = "https://talk2doc-be.onrender.com";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_PREFIX = "/api";
 
 const PROFILE_URL = `${BASE_URL}${API_PREFIX}/profile`;
@@ -217,7 +217,7 @@ export const addDoctorByHospital = async (doctorData) => {
 };
 
 export const getMyAssessments = async () => {
-  const res = await fetch("https://talk2doc-be.onrender.com/api/user/assessments/my", {
+  const res = await fetch(`${BASE_URL}/api/user/assessments/my`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
