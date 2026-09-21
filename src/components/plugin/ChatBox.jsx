@@ -11,11 +11,13 @@ import {
   LuMicOff as MicOff,
   LuVolume2 as Volume2,
   LuVolumeX as VolumeX,
-  LuLoader as Loader2
+  LuLoader as Loader2,
+  LuSettings as Settings,
+  LuX as X
 } from 'react-icons/lu';
 import QuickChips from './QuickChips';
 import DepartmentResult from './DepartmentResult';
-import { matchFreeTextQuery, matchDurationQuery, matchSeverityQuery } from '../../utils/symptomSynonyms';
+import { matchFreeTextQuery, matchDurationQuery, matchSeverityQuery, isNegativeResponse, extractFullTriageIntent, loadSynonymsFromApi } from '../../utils/symptomSynonyms';
 
 export default function ChatBox({
   selectedBodyPart,
@@ -35,6 +37,16 @@ export default function ChatBox({
   // 'idle' | 'listening' | 'thinking' | 'speaking'
 
   const [voiceTranscript, setVoiceTranscript] = useState('');
+
+  // Voice Customization Settings
+  const [selectedVoiceUri, setSelectedVoiceUri] = useState(() => {
+    return localStorage.getItem('talk2doc_voice_uri') || 'auto_us_female';
+  });
+  const [voiceSpeed, setVoiceSpeed] = useState(() => {
+    return parseFloat(localStorage.getItem('talk2doc_voice_speed') || '0.88');
+  });
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState([]);
 
   const voiceModeRef = useRef(false);
   const voiceTranscriptRef = useRef('');
@@ -70,6 +82,8 @@ export default function ChatBox({
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [showAvatars, setShowAvatars] = useState(false);
   const recognitionRef = useRef(null);
+  const isRecognizingRef = useRef(false);
+  const restartTimerRef = useRef(null);
   const currentStepRef = useRef('body_area');
   const triageDataRef = useRef(triageData);
   const messagesRef = useRef(messages);
@@ -85,6 +99,20 @@ export default function ChatBox({
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  useEffect(() => {
+    loadSynonymsFromApi(API_BASE_URL);
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const updateVoicesList = () => {
+        const v = window.speechSynthesis.getVoices() || [];
+        if (v.length > 0) {
+          setAvailableVoices(v);
+        }
+      };
+      updateVoicesList();
+      window.speechSynthesis.onvoiceschanged = updateVoicesList;
+    }
+  }, []);
 
   const updateCurrentStep = (step) => {
     currentStepRef.current = step;
@@ -102,7 +130,7 @@ export default function ChatBox({
   const messagesEndRef = useRef(null);
   const selectingAreaRef = useRef(false);
 
-  // Text-To-Speech (Voice Output) with safety timeout to prevent hanging
+  // Text-To-Speech (Voice Output) with neural voice selection and console logging
   const speakAgent = (text) => {
     return new Promise((resolve) => {
       if (
@@ -114,11 +142,31 @@ export default function ChatBox({
         return;
       }
 
+      // Clear any pending restart timers
+      if (restartTimerRef.current) {
+        clearTimeout(restartTimerRef.current);
+        restartTimerRef.current = null;
+      }
+
+      // Stop recognition while speaking so AI does not hear itself
+      isRecognizingRef.current = false;
+      try {
+        if (recognitionRef.current) {
+          recognitionRef.current.abort();
+        }
+      } catch {}
+      recognitionRef.current = null;
+
       window.speechSynthesis.cancel();
 
+      // Clean spoken text: strip markdown bold/italics, parentheticals, links, and emojis
       const cleanText = text
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/\(.*?[0-9a-zA-Z].*?\)/g, '')
         .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\u2011-\u26FF|\uD83E[\uDD10-\uDDFF])/g, '')
         .replace(/[*_#`]/g, '')
+        .replace(/\s+/g, ' ')
         .trim();
 
       if (!cleanText) {
@@ -126,12 +174,77 @@ export default function ChatBox({
         return;
       }
 
+      // 📢 Console print of AI agent voice text for testing
+      console.log(
+        '%c[AI Agent Voice Output]%c ' + cleanText,
+        'background: #0284c7; color: white; padding: 3px 10px; border-radius: 4px; font-weight: bold; font-size: 13px;',
+        'color: #0f172a; font-weight: 600; font-size: 13px;'
+      );
+
       setVoiceStatus('speaking');
 
       const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'en-IN';
-      utterance.rate = 0.94;
-      utterance.pitch = 1;
+      utterance.lang = 'en-US';
+      utterance.rate = voiceSpeed || 0.88; // User selected or default 0.88 slow pace
+      utterance.pitch = 1.0;
+
+      // Select voice based on user preference or automatic American voice
+      const _voices = availableVoices.length > 0 ? availableVoices : (window.speechSynthesis.getVoices() || []);
+      const isUkVoice = v => /uk|british|gb\b|en[-_]gb/i.test((v.name || '') + ' ' + (v.lang || ''));
+      const americanVoices = _voices.filter(v => !isUkVoice(v));
+
+      let chosenVoice = null;
+
+      // 1. Check if user selected a specific system voice
+      if (
+        selectedVoiceUri &&
+        selectedVoiceUri !== 'auto_us_female' &&
+        selectedVoiceUri !== 'auto_us_male' &&
+        selectedVoiceUri !== 'auto_in_english'
+      ) {
+        chosenVoice = _voices.find(v => v.voiceURI === selectedVoiceUri || v.name === selectedVoiceUri);
+      }
+
+      // 2. Persona shortcuts
+      if (!chosenVoice) {
+        if (selectedVoiceUri === 'auto_us_male') {
+          chosenVoice = americanVoices.find(v => /guy|david|mark|george|male/i.test(v.name) && /en[-_]us/i.test(v.lang))
+            || americanVoices.find(v => /male/i.test(v.name))
+            || americanVoices[0];
+        } else if (selectedVoiceUri === 'auto_in_english') {
+          chosenVoice = _voices.find(v => /en[-_]in/i.test(v.lang) || /india/i.test(v.name))
+            || americanVoices[0];
+        } else {
+          // Default: auto_us_female (crisp, soothing American English)
+          const _voicePref = [
+            v => /natural|neural|online/i.test(v.name) && /en[-_]us/i.test(v.lang) && /jenny|aria|michelle|female/i.test(v.name),
+            v => /natural|neural|online/i.test(v.name) && /en[-_]us/i.test(v.lang),
+            v => /google/i.test(v.name) && (/us\b|united states/i.test(v.name) || /en[-_]us/i.test(v.lang)),
+            v => /en[-_]us/i.test(v.lang) && /zira|samantha|eva|susan/i.test(v.name),
+            v => /en[-_]us/i.test(v.lang),
+            v => /google/i.test(v.name),
+            v => /en/i.test(v.lang)
+          ];
+          for (const _test of _voicePref) {
+            const _m = americanVoices.find(_test);
+            if (_m) { chosenVoice = _m; break; }
+          }
+        }
+      }
+
+      if (!chosenVoice && _voices.length > 0) {
+        chosenVoice = americanVoices[0] || _voices.find(v => /en[-_]us/i.test(v.lang)) || _voices[0];
+      }
+
+      if (chosenVoice) {
+        utterance.voice = chosenVoice;
+      }
+
+      console.log(
+        '%c[TTS Voice Engine]%c ' + (utterance.voice ? utterance.voice.name + ' (' + utterance.voice.lang + ')' : 'Default Browser Voice') + ' @ ' + utterance.rate + 'x',
+        'background: #10b981; color: white; padding: 2px 8px; border-radius: 3px; font-size: 11px;',
+        'color: #059669; font-size: 11px;'
+      );
 
       let settled = false;
       const finish = () => {
@@ -139,11 +252,27 @@ export default function ChatBox({
           settled = true;
           clearTimeout(safetyTimer);
           resolve();
+
+          // After AI finishes speaking, update voice status to listening and restart recognition
+          if (voiceModeRef.current && currentStepRef.current !== 'result') {
+            setVoiceStatus('listening');
+            if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+            restartTimerRef.current = setTimeout(() => {
+              if (
+                voiceModeRef.current &&
+                currentStepRef.current !== 'result' &&
+                !isRecognizingRef.current
+              ) {
+                startAgentListening();
+              }
+            }, 300);
+          } else {
+            setVoiceStatus('idle');
+          }
         }
       };
 
-      // Safety timeout: Chrome can stall or garbage-collect utterance
-      const maxWait = Math.min(cleanText.length * 85 + 1500, 7000);
+      const maxWait = Math.min(cleanText.length * 90 + 2000, 8000);
       const safetyTimer = setTimeout(finish, maxWait);
 
       utterance.onend = finish;
@@ -155,6 +284,24 @@ export default function ChatBox({
 
   const startAgentListening = () => {
     if (!voiceModeRef.current) return;
+    if (currentStepRef.current === 'result') return;
+
+    // Clear any pending restart timer
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
+
+    // Already actively listening — DO NOT START AGAIN (prevents glitch loop)
+    if (isRecognizingRef.current) {
+      return;
+    }
+
+    // If speech synthesis is actively speaking, wait for it to finish
+    if (window.speechSynthesis && window.speechSynthesis.speaking) {
+      restartTimerRef.current = setTimeout(() => startAgentListening(), 350);
+      return;
+    }
 
     const SpeechRecognition =
       window.SpeechRecognition ||
@@ -174,57 +321,53 @@ export default function ChatBox({
     try {
       const recognition = new SpeechRecognition();
 
-      recognition.lang = 'en-IN';
+      recognition.lang = 'en-US';
       recognition.continuous = false;
       recognition.interimResults = true;
 
       recognition.onstart = () => {
+        isRecognizingRef.current = true;
         setVoiceStatus('listening');
         setIsListening(true);
-
         setVoiceTranscript('');
         voiceTranscriptRef.current = '';
       };
 
       recognition.onresult = (event) => {
         let transcript = '';
-
-        for (
-          let i = event.resultIndex;
-          i < event.results.length;
-          i++
-        ) {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
         }
-
         transcript = transcript.trim();
-
         setVoiceTranscript(transcript);
         voiceTranscriptRef.current = transcript;
       };
 
       recognition.onerror = (event) => {
+        // 'no-speech' is a harmless silence pause by the user — let onend handle clean restart
+        if (event.error === 'no-speech') {
+          return;
+        }
+
         console.warn(
           '[Talk2Doc Voice] Speech recognition error:',
           event.error
         );
 
-        setIsListening(false);
+        isRecognizingRef.current = false;
 
         if (event.error === 'not-allowed') {
-          setSpeechError(
-            'Microphone permission denied.'
-          );
+          setIsListening(false);
+          setSpeechError('Microphone permission denied.');
+          setVoiceStatus('idle');
         }
-
-        setVoiceStatus('idle');
       };
 
       recognition.onend = () => {
+        isRecognizingRef.current = false;
         setIsListening(false);
 
-        const transcript =
-          voiceTranscriptRef.current?.trim();
+        const transcript = voiceTranscriptRef.current?.trim();
 
         if (
           transcript &&
@@ -232,33 +375,64 @@ export default function ChatBox({
           !voiceProcessingRef.current
         ) {
           processVoiceInput(transcript);
+        } else if (
+          voiceModeRef.current &&
+          currentStepRef.current !== 'result' &&
+          !voiceProcessingRef.current &&
+          !isRecognizingRef.current &&
+          !(window.speechSynthesis && window.speechSynthesis.speaking)
+        ) {
+          // Restart after silence pause so microphone stays ready
+          if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+          restartTimerRef.current = setTimeout(() => {
+            if (
+              voiceModeRef.current &&
+              currentStepRef.current !== 'result' &&
+              !voiceProcessingRef.current &&
+              !isRecognizingRef.current &&
+              !(window.speechSynthesis && window.speechSynthesis.speaking)
+            ) {
+              startAgentListening();
+            }
+          }, 300);
         }
       };
 
       recognitionRef.current = recognition;
-
+      isRecognizingRef.current = true;
       recognition.start();
 
     } catch (error) {
-      console.error(
-        '[Talk2Doc Voice] Failed to start:',
-        error
-      );
-
+      isRecognizingRef.current = false;
       setIsListening(false);
-      setVoiceStatus('idle');
+      console.warn('[Talk2Doc Voice] Start failed:', error);
+      if (voiceModeRef.current && currentStepRef.current !== 'result') {
+        if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+        restartTimerRef.current = setTimeout(() => startAgentListening(), 500);
+      }
     }
   };
 
   const processVoiceInput = async (text) => {
     if (!text?.trim()) {
-      if (voiceModeRef.current) {
-        setTimeout(() => startAgentListening(), 500);
+      if (voiceModeRef.current && !isRecognizingRef.current) {
+        startAgentListening();
       }
       return;
     }
 
     if (voiceProcessingRef.current) return;
+
+    // Clear any restart timer
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
+
+    // Stop recognition during AI processing
+    isRecognizingRef.current = false;
+    try { recognitionRef.current?.abort(); } catch {}
+    recognitionRef.current = null;
 
     voiceProcessingRef.current = true;
     setVoiceStatus('thinking');
@@ -272,23 +446,37 @@ export default function ChatBox({
       voiceProcessingRef.current = false;
       setIsAiProcessing(false);
 
-      // Result reached → stop voice conversation
+      // If speech synthesis has already finished or didn't speak, resume listening immediately
       if (
         voiceModeRef.current &&
-        currentStepRef.current !== 'result'
+        currentStepRef.current !== 'result' &&
+        !isRecognizingRef.current
       ) {
-        setTimeout(() => {
-          if (
-            voiceModeRef.current &&
-            !voiceProcessingRef.current
-          ) {
-            startAgentListening();
-          }
-        }, 600);
+        if (!window.speechSynthesis || !window.speechSynthesis.speaking) {
+          setVoiceStatus('listening');
+          if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+          restartTimerRef.current = setTimeout(() => {
+            if (
+              voiceModeRef.current &&
+              currentStepRef.current !== 'result' &&
+              !isRecognizingRef.current
+            ) {
+              startAgentListening();
+            }
+          }, 350);
+        }
       }
     }
   };
-  const startVoiceConversation = async () => {
+
+  const switchToVoiceMode = async () => {
+    if (interactionMode === 'voice') return;
+
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
+
     voiceModeRef.current = true;
     voiceProcessingRef.current = false;
 
@@ -297,8 +485,25 @@ export default function ChatBox({
     voiceTranscriptRef.current = '';
     setSpeechError(null);
 
+    // If diagnosis is already completed, DO NOT start over or speak greeting!
+    if (currentStepRef.current === 'result' || recommendation) {
+      setVoiceStatus('idle');
+      return;
+    }
+
+    // If already in progress, keep existing messages and current step!
+    if (messages.length > 1 || currentStep !== 'body_area') {
+      setTimeout(() => {
+        if (voiceModeRef.current && !isRecognizingRef.current) {
+          startAgentListening();
+        }
+      }, 300);
+      return;
+    }
+
+    // Brand new initial conversation
     const greeting =
-      "Hi, I'm Talk2Doc. Tell me what's been bothering you. You can speak naturally, and I'll ask you a few questions.";
+      "Hey! Don't worry at all, I'm right here with you. Tell me what's going on or how you're feeling today — take your time, in any words you like.";
 
     const initialMsgs = [
       {
@@ -312,24 +517,31 @@ export default function ChatBox({
     setMessages(initialMsgs);
 
     try {
+      // speakAgent auto-starts listening when it finishes!
       await speakAgent(greeting);
     } catch (e) {
       console.warn("Speech synthesis error:", e);
-    }
-
-    if (voiceModeRef.current) {
-      setTimeout(() => {
+      if (voiceModeRef.current && !isRecognizingRef.current) {
         startAgentListening();
-      }, 400);
+      }
     }
   };
+
   const exitVoiceMode = () => {
     voiceModeRef.current = false;
     voiceProcessingRef.current = false;
 
+    if (restartTimerRef.current) {
+      clearTimeout(restartTimerRef.current);
+      restartTimerRef.current = null;
+    }
+
+    isRecognizingRef.current = false;
+
     try {
-      recognitionRef.current?.stop();
+      recognitionRef.current?.abort();
     } catch { }
+    recognitionRef.current = null;
 
     window.speechSynthesis?.cancel();
 
@@ -433,6 +645,13 @@ export default function ChatBox({
 
   const addBotMessage = (text, extra = {}, options = {}) => {
     const { speakMessage = false } = options;
+
+    console.log(
+      '%c[AI Agent Voice / Reply]%c ' + text,
+      'background: #0284c7; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;',
+      'color: #0f172a; font-weight: 600; font-size: 13px;'
+    );
+
     const newMsg = {
       id: Date.now() + Math.random(),
       sender: 'bot',
@@ -443,7 +662,9 @@ export default function ChatBox({
     messagesRef.current = [...messagesRef.current, newMsg];
     setMessages(prev => [...prev, newMsg]);
 
-    if (speakMessage) {
+    // Only speak if speakMessage is explicitly true.
+    // In voice mode, callers that use await speakAgent handle speech themselves, preventing double speech.
+    if (speakMessage === true) {
       speakAgent(text);
     }
   };
@@ -920,6 +1141,108 @@ export default function ChatBox({
       }
     );
   };
+  // One-Shot Complete Triage: when user gives full sentence with symptom + duration + severity
+  const handleOneShotCompleteTriage = async (intent, source = 'manual') => {
+    const { symptomId, durationLabel, durationId, severityId, bodyArea } = intent;
+    if (!symptomId) return false;
+
+    console.log('[Talk2Doc] One-shot complete triage triggered:', { symptomId, durationId, severityId, bodyArea });
+
+    setIsAiProcessing(true);
+    setIsTyping(true);
+
+    let targetAreaKey = bodyArea || triageDataRef.current.bodyArea;
+    let foundSymptom = null;
+
+    if (targetAreaKey && bodyPartsData?.[targetAreaKey]) {
+      foundSymptom = bodyPartsData[targetAreaKey]?.symptoms?.find(s => s.id === symptomId);
+    }
+    if (!foundSymptom) {
+      for (const [aKey, aVal] of Object.entries(bodyPartsData || {})) {
+        const s = aVal?.symptoms?.find(sym => sym.id === symptomId);
+        if (s) {
+          foundSymptom = s;
+          targetAreaKey = aKey;
+          break;
+        }
+      }
+    }
+
+    const finalLabel = foundSymptom?.label || intent.symptomLabel || symptomId;
+    const finalAreaKey = targetAreaKey || 'general';
+    const finalDuration = durationLabel || (durationId === 'hours' ? 'Hours to a day' : durationId === 'days' ? '1 to 3 days' : durationId === 'weeks' ? '1 to 4 weeks' : 'Chronic');
+    const finalSeverity = severityId || 'moderate';
+
+    updateTriageData(prev => ({
+      ...prev,
+      bodyArea: finalAreaKey,
+      symptomId,
+      symptomName: finalLabel,
+      duration: finalDuration,
+      severity: finalSeverity
+    }));
+
+    if (onBodyPartSelect && finalAreaKey) {
+      onBodyPartSelect(finalAreaKey);
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/recommend`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bodyArea: finalAreaKey,
+          symptomId,
+          duration: finalDuration,
+          severity: finalSeverity
+        })
+      });
+
+      const data = await res.json();
+      setIsAiProcessing(false);
+      setIsTyping(false);
+
+      if (data.success && data.recommendation) {
+        const rec = data.recommendation;
+        setRecommendation(rec);
+        updateCurrentStep('result');
+
+        const informalAcks = [
+          `Oh bless you, I hear you — dealing with ${finalLabel} ${finalDuration.toLowerCase().includes('since') ? finalDuration : 'for ' + finalDuration} sounds really exhausting! Don't worry at all, I've got everything I need to get you sorted out.`,
+          `Aww, so sorry you're going through that ${finalLabel}! That must be really uncomfortable. I've taken note of everything — here is the best doctor for you:`,
+          `Oh gosh, having ${finalLabel} for ${finalDuration} is no fun at all. Hang in there! Based on everything you told me, here is exactly who you should see:`
+        ];
+        const ackText = informalAcks[Math.floor(Math.random() * informalAcks.length)];
+
+        const spokenMessage = `Alright! You should definitely see a ${rec.department} specialist for this. ${rec.advice ? rec.advice : ''} Don't worry at all, you'll be in good hands!`;
+
+        const newMsg = {
+          id: Date.now(),
+          sender: 'bot',
+          text: ackText,
+          isResultCard: true,
+          recommendation: rec
+        };
+
+        messagesRef.current = [...messagesRef.current, newMsg];
+        setMessages(prev => [...prev, newMsg]);
+
+        if (source === 'voice' || voiceModeRef.current) {
+          await speakAgent(spokenMessage);
+          voiceModeRef.current = false;
+          setIsListening(false);
+          setVoiceStatus('idle');
+        }
+        return true;
+      }
+    } catch (err) {
+      console.warn('[Talk2Doc] One-shot recommend failed:', err);
+      setIsAiProcessing(false);
+      setIsTyping(false);
+    }
+    return false;
+  };
+
   const processUserInput = async (
     rawQuery,
     { source = 'manual' } = {}
@@ -936,6 +1259,18 @@ export default function ChatBox({
     );
 
     addUserMessage(query);
+
+    // ==========================================
+    // 0. ONE-SHOT COMPLETE TRIAGE (symptom + duration + severity)
+    // ==========================================
+    if (currentStepRef.current === 'body_area' || currentStepRef.current === null) {
+      const fullIntent = extractFullTriageIntent(query);
+      if (fullIntent?.isComplete) {
+        console.log('[Talk2Doc] One-shot full triage detected from text:', fullIntent);
+        const handled = await handleOneShotCompleteTriage(fullIntent, source);
+        if (handled) return;
+      }
+    }
 
     // ==========================================
     // 1. DURATION
@@ -1095,12 +1430,25 @@ export default function ChatBox({
           extraSymptoms: extraSymptoms?.length ? extraSymptoms : prev.extraSymptoms
         }));
 
-        // Spoken or text reply
-        if (source === 'voice' && data.conversationalReply) {
+        // One-shot triage if full information is already extracted
+        if ((symptomId || triageDataRef.current.symptomId) && durationId && severityId) {
+          const handled = await handleOneShotCompleteTriage({
+            symptomId: symptomId || triageDataRef.current.symptomId,
+            symptomLabel: symptomName || triageDataRef.current.symptomName,
+            bodyArea: bodyArea || triageDataRef.current.bodyArea,
+            durationId,
+            durationLabel: duration || durationId,
+            severityId
+          }, source);
+          if (handled) return;
+        }
+
+        // Spoken or text reply — speak EXACTLY ONCE
+        if (data.conversationalReply) {
           addBotMessage(data.conversationalReply, {}, { speakMessage: false });
-          await speakAgent(data.conversationalReply);
-        } else if (data.conversationalReply) {
-          addBotMessage(data.conversationalReply);
+          if (source === 'voice' || voiceModeRef.current) {
+            await speakAgent(data.conversationalReply);
+          }
         }
 
         // Decision tree answer
@@ -1168,9 +1516,12 @@ export default function ChatBox({
                   answersMap: {},
                   pendingMultiSelect: []
                 }));
-                addBotMessage(startNode.question, {}, { speakMessage: source !== 'voice' });
-                if (source === 'voice') {
-                  await speakAgent(startNode.question);
+                // Only ask tree question if conversationalReply was not already given
+                if (!data.conversationalReply) {
+                  addBotMessage(startNode.question, {}, { speakMessage: false });
+                  if (source === 'voice' || voiceModeRef.current) {
+                    await speakAgent(startNode.question);
+                  }
                 }
                 updateCurrentStep('tree_node');
                 return;
@@ -1184,13 +1535,16 @@ export default function ChatBox({
               return;
             }
 
-            const durationQuestion =
-              followUpQuestions?.duration?.question ||
-              'How long have you been experiencing this problem?';
+            // Only ask duration question if conversationalReply was not already provided!
+            if (!data.conversationalReply) {
+              const durationQuestion =
+                followUpQuestions?.duration?.question ||
+                'How long have you been experiencing this problem?';
 
-            addBotMessage(durationQuestion, {}, { speakMessage: source !== 'voice' });
-            if (source === 'voice') {
-              await speakAgent(durationQuestion);
+              addBotMessage(durationQuestion, {}, { speakMessage: false });
+              if (source === 'voice' || voiceModeRef.current) {
+                await speakAgent(durationQuestion);
+              }
             }
             updateCurrentStep('duration');
             return;
@@ -1514,14 +1868,25 @@ export default function ChatBox({
           )}
 
           {interactionMode === 'voice' && (
-            <button
-              type="button"
-              className="voice-exit-btn"
-              onClick={exitVoiceMode}
-              title="Exit voice consultation"
-            >
-              Exit
-            </button>
+            <div className="voice-header-btn-group">
+              <button
+                type="button"
+                className="voice-settings-btn"
+                onClick={() => setShowVoiceSettings(true)}
+                title="Change AI Voice Type & Speed"
+              >
+                <Settings size={13} />
+                <span>Voice Settings</span>
+              </button>
+              <button
+                type="button"
+                className="voice-exit-btn"
+                onClick={exitVoiceMode}
+                title="Exit voice consultation"
+              >
+                Exit
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -1549,7 +1914,7 @@ export default function ChatBox({
           type="button"
           className={`interaction-option ${interactionMode === 'voice' ? 'active' : ''
             }`}
-          onClick={startVoiceConversation}
+          onClick={switchToVoiceMode}
         >
           <div className="interaction-icon">🎙️</div>
 
@@ -1699,160 +2064,298 @@ export default function ChatBox({
       )}
       {interactionMode === 'voice' && (
         <div className="voice-agent">
-
           <div className="voice-agent-main">
 
+            {/* ═══ GLOWING WIREFRAME SPHERE ═══ */}
             <div
               className={`voice-agent-orb ${voiceStatus}`}
               onClick={() => {
                 if (isListening) {
                   try { recognitionRef.current?.stop(); } catch {}
-                } else if (voiceStatus !== 'speaking') {
+                  setIsListening(false);
+                  isRecognizingRef.current = false;
+                  setVoiceStatus('idle');
+                } else {
+                  window.speechSynthesis?.cancel();
+                  setVoiceStatus('listening');
                   startAgentListening();
                 }
               }}
-              title={isListening ? "Click to pause listening" : "Click to speak"}
+              title={isListening ? 'Tap to pause listening' : 'Tap to speak'}
             >
               <div className="voice-agent-ring ring-one"></div>
               <div className="voice-agent-ring ring-two"></div>
-
+              <div className="sphere-ring r-eq"></div>
+              <div className="sphere-ring r-m30"></div>
+              <div className="sphere-ring r-p30"></div>
+              <div className="sphere-ring r-vert"></div>
               <div className="voice-agent-core">
-                {voiceStatus === 'listening' ? (
-                  <Mic size={34} />
-                ) : voiceStatus === 'speaking' ? (
-                  <Volume2 size={34} />
-                ) : voiceStatus === 'thinking' ? (
-                  <Loader2
-                    size={34}
-                    className="duo-spin"
-                  />
-                ) : (
-                  <Bot size={34} />
-                )}
+                {voiceStatus === 'listening' ? <Mic size={22} /> :
+                 voiceStatus === 'speaking' ? <Volume2 size={22} /> :
+                 voiceStatus === 'thinking' ? <Loader2 size={20} className="duo-spin" /> :
+                 <Bot size={20} />}
               </div>
             </div>
 
-            <h2 className="voice-agent-status-title">
-              {voiceStatus === 'listening'
-                ? "I'm listening"
-                : voiceStatus === 'thinking'
-                  ? 'Let me understand that'
-                  : voiceStatus === 'speaking'
-                    ? 'Talk2Doc is speaking'
-                    : 'Ready when you are'}
-            </h2>
-
+            <p className="voice-agent-status-title">
+              {voiceStatus === 'listening' ? "I'm listening..." :
+               voiceStatus === 'thinking' ? 'One moment...' :
+               voiceStatus === 'speaking' ? 'Talk2Doc is speaking...' :
+               currentStep === 'result' ? 'All done!' : 'Tap the sphere or speak'}
+            </p>
             <p className="voice-agent-status-text">
-              {voiceStatus === 'listening'
-                ? 'Tell me naturally what you are experiencing.'
-                : voiceStatus === 'thinking'
-                  ? 'Processing what you told me...'
-                  : voiceStatus === 'speaking'
-                    ? 'Please listen to the next question.'
-                    : 'Your consultation will continue automatically.'}
+              {voiceTranscript
+                ? `"${voiceTranscript}"`
+                : voiceStatus === 'listening'
+                  ? 'Speak naturally — I understand simple words too!'
+                  : voiceStatus === 'thinking'
+                    ? 'Analyzing what you said...'
+                    : voiceStatus === 'speaking'
+                      ? 'Listen for the next question...'
+                      : 'Tap below or say your symptom anytime.'}
             </p>
 
-            {voiceTranscript && (
-              <div className="voice-transcript">
-                <span className="transcript-label">
-                  You said
-                </span>
-
-                <p>
-                  “{voiceTranscript}”
-                </p>
+            {currentStep === 'result' && recommendation ? (
+              <div className="voice-result-container">
+                <DepartmentResult recommendation={recommendation} onReset={initChat} />
+              </div>
+            ) : (
+              <div className="voice-options-panel">
+                {currentStep === 'body_area' && (
+                  <>
+                    <p className="voice-options-label">Where does it hurt?</p>
+                    <div className="voice-option-chips">
+                      {bodyAreaChips.map((opt, idx) => (
+                        <button key={`${opt.id}-${idx}`} type="button"
+                          className="voice-option-chip"
+                          onClick={() => handleSelectBodyArea(opt.id)}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {currentStep === 'symptom' && (
+                  <>
+                    <p className="voice-options-label">What kind of problem in {bodyPartsData?.[triageData.bodyArea]?.displayName}?</p>
+                    <div className="voice-option-chips">
+                      {activeSymptoms.map(symp => (
+                        <button key={symp.id} type="button"
+                          className="voice-option-chip"
+                          onClick={() => handleSelectSymptom(symp)}>
+                          {symp.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {currentStep === 'tree_node' && currentNodeType === 'single_select' && (
+                  <>
+                    <p className="voice-options-label">Choose one:</p>
+                    <div className="voice-option-chips">
+                      {currentNodeOptions.map(opt => (
+                        <button key={opt.id} type="button"
+                          className="voice-option-chip"
+                          onClick={() => handleTreeSingleSelect(opt.id, opt.label)}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {currentStep === 'tree_node' && currentNodeType === 'multi_select' && (
+                  <>
+                    <p className="voice-options-label">Select all that apply:</p>
+                    <div className="voice-option-chips">
+                      {currentNodeOptions.map(opt => {
+                        const isSel = triageData.pendingMultiSelect.includes(opt.id);
+                        return (
+                          <button key={opt.id} type="button"
+                            className={`voice-option-chip ${isSel ? 'selected' : ''}`}
+                            onClick={() => toggleMultiSelectOption(opt.id)}>
+                            {isSel && <Check size={12} />} {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button type="button" className="voice-confirm-chip"
+                      onClick={confirmMultiSelect}
+                      disabled={triageData.pendingMultiSelect.length === 0}>
+                      <Check size={15} /> Confirm
+                    </button>
+                  </>
+                )}
+                {currentStep === 'duration' && (
+                  <>
+                    <p className="voice-options-label">How long has this been going on?</p>
+                    <div className="voice-option-chips">
+                      {(followUpQuestions?.duration?.options || []).map(opt => (
+                        <button key={opt.id} type="button"
+                          className="voice-option-chip"
+                          onClick={() => handleSelectDuration(opt)}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {currentStep === 'severity' && (
+                  <>
+                    <p className="voice-options-label">How bad does it feel?</p>
+                    <div className="voice-option-chips">
+                      {(followUpQuestions?.severity?.options || []).map(opt => (
+                        <button key={opt.id} type="button"
+                          className={`voice-option-chip severity-${opt.id}`}
+                          onClick={() => handleSelectSeverity(opt)}>
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             )}
-
-            <div className="voice-understanding">
-
-              <div className="understanding-header">
-                <div>
-                  <strong>What I've understood</strong>
-                  <span>
-                    Updated automatically during your consultation
-                  </span>
-                </div>
-              </div>
-
-              <div className="understanding-row">
-                <span>Body area</span>
-                <strong>
-                  {understoodData.bodyArea || '—'}
-                </strong>
-              </div>
-
-              <div className="understanding-row">
-                <span>Main concern</span>
-                <strong>
-                  {understoodData.symptomName || '—'}
-                </strong>
-              </div>
-
-              <div className="understanding-row">
-                <span>Duration</span>
-                <strong>
-                  {understoodData.duration || '—'}
-                </strong>
-              </div>
-
-              <div className="understanding-row">
-                <span>Severity</span>
-                <strong>
-                  {understoodData.severity || '—'}
-                </strong>
-              </div>
-
-              {understoodData.extraSymptoms?.length > 0 && (
-                <div className="understanding-row">
-                  <span>Other symptoms</span>
-
-                  <strong>
-                    {understoodData.extraSymptoms.join(', ')}
-                  </strong>
-                </div>
-              )}
-
-            </div>
-
           </div>
 
+          {/* Footer */}
           <div className="voice-agent-footer">
-
             <div
-              className={`voice-agent-mic ${isListening ? 'active' : ''
-                }`}
+              className={`voice-agent-mic ${isListening ? 'active' : ''}`}
               onClick={() => {
                 if (isListening) {
                   try { recognitionRef.current?.stop(); } catch {}
-                } else if (voiceStatus !== 'speaking') {
+                  setIsListening(false);
+                  isRecognizingRef.current = false;
+                  setVoiceStatus('idle');
+                } else {
+                  window.speechSynthesis?.cancel();
+                  setVoiceStatus('listening');
                   startAgentListening();
                 }
               }}
               title={isListening ? "Click to pause listening" : "Click to speak"}
             >
-              {isListening
-                ? <Mic size={24} />
-                : <MicOff size={24} />
-              }
+              {isListening ? <Mic size={22} /> : <MicOff size={22} />}
             </div>
 
-            <span>
-              {isListening
-                ? 'Listening automatically...'
-                : voiceStatus === 'speaking'
-                  ? 'Talk2Doc is speaking...'
-                  : 'Hands-free consultation (tap to speak)'}
-            </span>
-
-            {speechError && (
-              <div className="voice-error">
-                ⚠️ {speechError}
-              </div>
-            )}
-
+            <div className="voice-footer-meta">
+              <span>
+                {isListening
+                  ? 'Listening automatically... Speak naturally'
+                  : voiceStatus === 'speaking'
+                    ? 'Talk2Doc is speaking...'
+                    : 'Hands-free AI consultation • Tap mic or speak'}
+              </span>
+              {speechError && (
+                <span className="voice-error-text">⚠️ {speechError}</span>
+              )}
+            </div>
           </div>
+        </div>
+      )}
 
+      {/* ═══ VOICE CUSTOMIZATION MODAL ═══ */}
+      {showVoiceSettings && (
+        <div className="voice-settings-overlay" onClick={() => setShowVoiceSettings(false)}>
+          <div className="voice-settings-modal" onClick={e => e.stopPropagation()}>
+            <div className="voice-settings-header">
+              <div className="voice-settings-title-group">
+                <Volume2 size={18} />
+                <h4>Voice Settings</h4>
+              </div>
+              <button
+                type="button"
+                className="voice-settings-close"
+                onClick={() => setShowVoiceSettings(false)}
+                title="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="voice-settings-body">
+              <div className="voice-setting-field">
+                <label className="voice-setting-label">AI Voice Accent & Persona</label>
+                <select
+                  className="voice-setting-select"
+                  value={selectedVoiceUri}
+                  onChange={(e) => {
+                    setSelectedVoiceUri(e.target.value);
+                    localStorage.setItem('talk2doc_voice_uri', e.target.value);
+                  }}
+                >
+                  <optgroup label="⭐ Recommended American Accents">
+                    <option value="auto_us_female">🇺🇸 American Female (Google US / Jenny - Calm & Soothing)</option>
+                    <option value="auto_us_male">🇺🇸 American Male (David / Guy - Clear & Warm)</option>
+                  </optgroup>
+                  <optgroup label="🌍 Regional Accents">
+                    <option value="auto_in_english">🇮🇳 Indian English (Natural)</option>
+                  </optgroup>
+                  {availableVoices.length > 0 && (
+                    <optgroup label="💻 All Installed Browser Voices">
+                      {availableVoices.map((v, i) => (
+                        <option key={v.voiceURI || `${v.name}-${i}`} value={v.voiceURI || v.name}>
+                          {v.name} ({v.lang})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
+
+              <div className="voice-setting-field">
+                <div className="voice-speed-header">
+                  <label className="voice-setting-label">
+                    Speaking Speed: <strong>{voiceSpeed.toFixed(2)}x</strong>
+                  </label>
+                  <span className="voice-speed-hint">
+                    {voiceSpeed < 0.85 ? 'Extra Slow & Gentle' : voiceSpeed <= 0.92 ? 'Relaxed Slow (Recommended)' : 'Standard Pace'}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.70"
+                  max="1.15"
+                  step="0.05"
+                  value={voiceSpeed}
+                  onChange={(e) => {
+                    const spd = parseFloat(e.target.value);
+                    setVoiceSpeed(spd);
+                    localStorage.setItem('talk2doc_voice_speed', spd.toString());
+                  }}
+                  className="voice-speed-slider"
+                />
+                <div className="voice-speed-labels">
+                  <span>0.70x (Slow)</span>
+                  <span className="preset-active">0.88x (Ideal)</span>
+                  <span>1.15x (Fast)</span>
+                </div>
+              </div>
+
+              <div className="voice-preview-box">
+                <button
+                  type="button"
+                  className="voice-test-btn"
+                  onClick={() => {
+                    speakAgent("Hello! I'm Talk2Doc, your personal medical companion. Take your time, I'm right here with you.");
+                  }}
+                >
+                  <Volume2 size={16} />
+                  <span>Test Voice Sample</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="voice-settings-footer">
+              <button
+                type="button"
+                className="voice-save-btn"
+                onClick={() => setShowVoiceSettings(false)}
+              >
+                Save & Apply
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

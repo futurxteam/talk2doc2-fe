@@ -117,10 +117,31 @@ export default function DepartmentResult({ recommendation, onReset }) {
 
       <div className="result-section why-section">
         <div className="section-title">
-          <LuCircleCheck size={16} className="title-icon icon-blue" />
-          <span>Why this specialty?</span>
+          <LuCircleCheck size={18} className="title-icon icon-blue" />
+          <span>Why this department was chosen</span>
         </div>
-        <p className="section-text">{reason}</p>
+        
+        <div className="why-clinical-grid">
+          <div className="why-item">
+            <span className="why-item-badge">Primary Indication</span>
+            <p><strong>{symptomName}</strong> localized in the <strong>{bodyAreaName}</strong> region directly indicates clinical evaluation by <strong>{department}</strong> specialists.</p>
+          </div>
+
+          <div className="why-item">
+            <span className="why-item-badge">Specialist Scope</span>
+            <p>{reason}</p>
+          </div>
+
+          {(duration || severity) && (
+            <div className="why-item">
+              <span className="why-item-badge">Clinical Context</span>
+              <p>
+                {duration ? `Reported progression: ${duration}. ` : ''}
+                {severity ? `Assessed as ${severity.toUpperCase()} intensity, matching ${urgency === 'EMERGENCY' ? 'urgent emergency intervention' : urgency === 'PRIORITY' ? 'prompt specialist consultation' : 'routine clinical examination'}.` : ''}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="result-section advice-section">

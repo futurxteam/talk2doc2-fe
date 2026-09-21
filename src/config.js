@@ -4,6 +4,6 @@
 // and add it to Vercel's Environment Variables in the project dashboard.
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://talk2doc-be.onrender.com";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 export default API_BASE_URL;
