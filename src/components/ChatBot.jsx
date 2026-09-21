@@ -13,8 +13,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function SyndromicChatbot({ back, onComplete, height = "600px" }) {
   const navigate = useNavigate();
-const currentUser = getCurrentUser();
-const isPatient = currentUser && currentUser.role === "PATIENT";
+  const currentUser = getCurrentUser();
+  const isPatient = currentUser && currentUser.role === "PATIENT";
 
   const [messages, setMessages] = useState([]);
   const [step, setStep] = useState("select_region");
@@ -39,7 +39,7 @@ const isPatient = currentUser && currentUser.role === "PATIENT";
     { key: "no_vaccination", label: "Lack of vaccination", selected: false },
     { key: "unsafe_water", label: "Unsafe drinking water", selected: false },
   ]);
-  
+
   const [sessionId, setSessionId] = useState(null);
   const [pendingQuestions, setPendingQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -186,24 +186,24 @@ const isPatient = currentUser && currentUser.role === "PATIENT";
   };
 
   const showFinal = (res) => {
-  setFinalResult(res);
+    setFinalResult(res);
 
-  bot("✅ Assessment completed.");
+    bot("✅ Assessment completed.");
 
-  if (res.emergency) {
-    bot("🚨 " + res.emergencyReason);
-  }
+    if (res.emergency) {
+      bot("🚨 " + res.emergencyReason);
+    }
 
-  if (res.topDiagnosis) {
-    bot(
-      `🧠 Most likely: ${res.topDiagnosis.name} (${(res.topDiagnosis.score * 100).toFixed(1)}%)`
-    );
-  }
+    if (res.topDiagnosis) {
+      bot(
+        `🧠 Most likely: ${res.topDiagnosis.name} (${(res.topDiagnosis.score * 100).toFixed(1)}%)`
+      );
+    }
 
-  bot("Would you like me to find doctors near you?");
+    bot("Would you like me to find doctors near you?");
 
-  setStep("ask_doctors");
-};
+    setStep("ask_doctors");
+  };
 
   // RENDER CONTROLS
   const currentQuestion = pendingQuestions[currentIndex];
@@ -220,46 +220,46 @@ const isPatient = currentUser && currentUser.role === "PATIENT";
         </div>
       );
     }
-if (step === "ask_doctors") {
-  return (
-    <div className="options-scrollable">
-      <button
-        className="chip"
-        onClick={() => {
-          user("Yes, show nearby doctors");
-          setStep("show_doctors");
-        }}
-      >
-        🏥 Yes, show nearby doctors
-      </button>
+    if (step === "ask_doctors") {
+      return (
+        <div className="options-scrollable">
+          <button
+            className="chip"
+            onClick={() => {
+              user("Yes, show nearby doctors");
+              setStep("show_doctors");
+            }}
+          >
+            🏥 Yes, show nearby doctors
+          </button>
 
-      <button
-        className="chip"
-        onClick={() => {
-          user("No, just show my results");
-          bot("Alright. Here is your summary. You can consult a doctor anytime if symptoms persist.");
-          setStep("done");
-        }}
-      >
-        📄 No, just show results
-      </button>
-    </div>
-  );
-}
-if (step === "show_doctors" && finalResult) {
-  // Pick best specialty automatically
-  const best = finalResult.results?.[0];
-  const specialty = best?.category || "General Medicine";
+          <button
+            className="chip"
+            onClick={() => {
+              user("No, just show my results");
+              bot("Alright. Here is your summary. You can consult a doctor anytime if symptoms persist.");
+              setStep("done");
+            }}
+          >
+            📄 No, just show results
+          </button>
+        </div>
+      );
+    }
+    if (step === "show_doctors" && finalResult) {
+      // Pick best specialty automatically
+      const best = finalResult.results?.[0];
+      const specialty = best?.category || "General Medicine";
 
-  return (
-    <div style={{ width: "100%", maxHeight: 300, overflowY: "auto" }}>
-      <NearbyClinics
-        specialty={specialty}
-        assessmentId={finalResult._id}
-      />
-    </div>
-  );
-}
+      return (
+        <div style={{ width: "100%", maxHeight: 300, overflowY: "auto" }}>
+          <NearbyClinics
+            specialty={specialty}
+            assessmentId={finalResult._id}
+          />
+        </div>
+      );
+    }
 
     if (step === "select_part") {
       return (
@@ -380,54 +380,54 @@ if (step === "show_doctors" && finalResult) {
 
     return null;
   };
-// 🔒 Not logged in
-if (!currentUser) {
-  return (
-    <div className="chatbot-container" style={{ height }}>
-      <div className="chatbot-header">
-        <span>🩺 Medical Assistant</span>
-        <button className="close-btn" onClick={back}>✕</button>
+  // 🔒 Not logged in
+  if (!currentUser) {
+    return (
+      <div className="chatbot-container" style={{ height }}>
+        <div className="chatbot-header">
+          <span>🩺 Medical Assistant</span>
+          <button className="close-btn" onClick={back}>✕</button>
+        </div>
+
+        <div className="chat-window" style={{ textAlign: "center", padding: 20 }}>
+          <h3>🔐 Login Required</h3>
+          <p>Please login or signup to use the medical assistant.</p>
+
+          <button
+            className="primary"
+            onClick={() => {
+              navigate("/login?redirect=/");
+            }}
+          >
+            Login / Signup
+          </button>
+        </div>
       </div>
+    );
+  }
 
-      <div className="chat-window" style={{ textAlign: "center", padding: 20 }}>
-        <h3>🔐 Login Required</h3>
-        <p>Please login or signup to use the medical assistant.</p>
+  // ⛔ Logged in but not patient
+  if (!isPatient) {
+    return (
+      <div className="chatbot-container" style={{ height }}>
+        <div className="chatbot-header">
+          <span>🩺 Medical Assistant</span>
+          <button className="close-btn" onClick={back}>✕</button>
+        </div>
 
-        <button
-          className="primary"
-          onClick={() => {
-            navigate("/login?redirect=/");
-          }}
-        >
-          Login / Signup
-        </button>
+        <div className="chat-window" style={{ textAlign: "center", padding: 20 }}>
+          <h3>⛔ Access Restricted</h3>
+          <p>
+            This medical assistant is only available for patient accounts.
+          </p>
+
+          <p className="muted">
+            Your current role: <b>{currentUser.role}</b>
+          </p>
+        </div>
       </div>
-    </div>
-  );
-}
-
-// ⛔ Logged in but not patient
-if (!isPatient) {
-  return (
-    <div className="chatbot-container" style={{ height }}>
-      <div className="chatbot-header">
-        <span>🩺 Medical Assistant</span>
-        <button className="close-btn" onClick={back}>✕</button>
-      </div>
-
-      <div className="chat-window" style={{ textAlign: "center", padding: 20 }}>
-        <h3>⛔ Access Restricted</h3>
-        <p>
-          This medical assistant is only available for patient accounts.
-        </p>
-
-        <p className="muted">
-          Your current role: <b>{currentUser.role}</b>
-        </p>
-      </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="chatbot-container" style={{ height }}>
