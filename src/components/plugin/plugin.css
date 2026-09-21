@@ -275,6 +275,13 @@
   letter-spacing: 0.02em;
 }
 
+.duo-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.duo-sound-btn,
 .duo-reset-btn {
   width: 32px;
   height: 32px;
@@ -289,9 +296,16 @@
   transition: all 0.15s ease;
 }
 
+.duo-sound-btn:hover,
 .duo-reset-btn:hover {
   background: #f1f5f9;
   color: #0f172a;
+}
+
+.duo-sound-btn.active {
+  color: var(--primary);
+  background: var(--primary-tint);
+  border-color: #bae6fd;
 }
 
 /* Progress Bar Track */
@@ -590,6 +604,96 @@
 .duo-input-bar button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Voice Input Mic Button */
+.duo-input-bar .duo-mic-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1.5px solid var(--border-color);
+}
+
+.duo-input-bar .duo-mic-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.duo-input-bar .duo-mic-btn.listening {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #dc2626;
+  animation: duoPulse 1.4s infinite ease-in-out;
+}
+
+@keyframes duoPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    transform: scale(1);
+  }
+}
+
+/* Listening & AI Processing Indicators */
+.duo-input-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.duo-listening-banner {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #fca5a5;
+  animation: duoFadeIn 0.2s ease-out;
+}
+
+.duo-ai-indicator {
+  background: #f0f9ff;
+  color: #0369a1;
+  padding: 5px 14px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid #bae6fd;
+  animation: duoFadeIn 0.2s ease-out;
+}
+
+.duo-speech-error {
+  background: #fffbeb;
+  color: #b45309;
+  padding: 6px 14px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border-top: 1px solid #fde68a;
+}
+
+.duo-spin {
+  animation: duoSpin 1s linear infinite;
+}
+
+@keyframes duoSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes duoFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ========================================================

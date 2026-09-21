@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Bot, User, RotateCcw, Check, ArrowRight } from 'lucide-react';
+import { Send, Bot, User, RotateCcw, Check, ArrowRight, Mic, MicOff, Volume2, VolumeX, Loader2 } from 'lucide-react';
 import QuickChips from './QuickChips';
 import DepartmentResult from './DepartmentResult';
 import { matchFreeTextQuery, matchDurationQuery, matchSeverityQuery } from '../utils/symptomSynonyms';
@@ -32,8 +32,91 @@ export default function ChatBox({
   const [isTyping, setIsTyping] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
 
+  // Voice Input & Output State
+  const [isListening, setIsListening] = useState(false);
+  const [speechError, setSpeechError] = useState(null);
+  const [isSpeechEnabled, setIsSpeechEnabled] = useState(false);
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const recognitionRef = useRef(null);
+
   const messagesEndRef = useRef(null);
   const selectingAreaRef = useRef(false);
+
+  // Text-To-Speech (Voice Output)
+  const speak = (text) => {
+    if (!isSpeechEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
+    try {
+      window.speechSynthesis.cancel();
+      const cleanText = text
+        .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+        .replace(/[*_#`]/g, '')
+        .trim();
+      if (!cleanText) return;
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'en-IN';
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn('Speech synthesis error:', err);
+    }
+  };
+
+  // Speech-To-Text (Voice Input)
+  const startVoiceInput = () => {
+    setSpeechError(null);
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setSpeechError('Voice recognition is not supported in this browser.');
+      setTimeout(() => setSpeechError(null), 4500);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'en-IN';
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setInputText(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        console.warn('Speech recognition error:', event.error);
+        setIsListening(false);
+        if (event.error === 'not-allowed') {
+          setSpeechError('Microphone permission denied.');
+          setTimeout(() => setSpeechError(null), 4500);
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.error('Failed to start voice recognition:', err);
+      setIsListening(false);
+    }
+  };
+
+  const stopVoiceInput = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch {}
+    setIsListening(false);
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -64,11 +147,14 @@ export default function ChatBox({
   }, [selectedBodyPart]);
 
   const initChat = () => {
+    if (isListening) stopVoiceInput();
+    window.speechSynthesis?.cancel();
     selectingAreaRef.current = false;
+    const initialGreeting = 'Hello! I am talk2doc, your medical specialty advisor. Where are you experiencing discomfort? You can tap a body part on the interactive diagram or select from the options below.';
     setMessages([{
       id: 1,
       sender: 'bot',
-      text: 'Hello! I am talk2doc, your medical specialty advisor. Where are you experiencing discomfort? You can tap a body part on the interactive diagram or select from the options below.'
+      text: initialGreeting
     }]);
     setCurrentStep('body_area');
     setTriageData({
@@ -78,10 +164,12 @@ export default function ChatBox({
       answersMap: {}, pendingMultiSelect: []
     });
     setRecommendation(null);
+    speak(initialGreeting);
   };
 
   const addBotMessage = (text, extra = {}) => {
     setMessages(prev => [...prev, { id: Date.now() + Math.random(), sender: 'bot', text, ...extra }]);
+    speak(text);
   };
 
   const addUserMessage = (text) => {
@@ -400,7 +488,7 @@ export default function ChatBox({
     }
   };
 
-  const handleTextSubmit = (e) => {
+  const handleTextSubmit = async (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
     const rawQuery = inputText.trim();
@@ -457,7 +545,111 @@ export default function ChatBox({
       }
     }
 
-    // 4. Free-text symptom or body part matching via clinical synonym dictionary
+    // 4. AI Clinical Extraction Layer
+    setIsAiProcessing(true);
+    setIsTyping(true);
+    try {
+      const res = await fetch('/api/ai/understand-symptoms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: rawQuery,
+          currentStep,
+          currentContext: {
+            bodyArea: triageData.bodyArea,
+            symptomId: triageData.symptomId,
+            symptomName: triageData.symptomName,
+            duration: triageData.duration,
+            severity: triageData.severity,
+            treeId: triageData.treeId,
+            currentNodeId: triageData.currentNodeId,
+            answersMap: triageData.answersMap,
+            recentConversation: messages.slice(-6).map(m => ({
+              role: m.sender === 'user' ? 'user' : 'assistant',
+              text: m.text
+            }))
+          }
+        })
+      });
+
+      const data = await res.json();
+      setIsAiProcessing(false);
+      setIsTyping(false);
+
+      if (data.success && data.extracted) {
+        const { bodyArea, symptomId, durationId, severityId } = data.extracted;
+
+        if (data.conversationalReply) {
+          addBotMessage(data.conversationalReply);
+        }
+
+        if (data.decisionAnswer?.selectedOptionIds?.length > 0 && currentStep === 'tree_node') {
+          const selectedId = data.decisionAnswer.selectedOptionIds[0];
+          handleTreeSingleSelect(selectedId, selectedId);
+          return;
+        }
+
+        if (currentStep === 'duration' && durationId) {
+          const opt = followUpQuestions?.duration?.options?.find(o => o.id === durationId) || { id: durationId, label: durationId };
+          handleSelectDuration(opt);
+          return;
+        }
+
+        if (currentStep === 'severity' && severityId) {
+          const opt = followUpQuestions?.severity?.options?.find(o => o.id === severityId) || { id: severityId, label: severityId };
+          handleSelectSeverity(opt);
+          return;
+        }
+
+        if (symptomId && bodyArea) {
+          const area = bodyPartsData?.[bodyArea];
+          const foundSymptom = area?.symptoms?.find(s => s.id === symptomId);
+          if (foundSymptom) {
+            setTriageData(prev => ({
+              ...prev,
+              bodyArea,
+              symptomId: foundSymptom.id,
+              symptomName: foundSymptom.label
+            }));
+            if (onBodyPartSelect) onBodyPartSelect(bodyArea);
+
+            if (foundSymptom.hasDecisionTree && foundSymptom.decisionTreeId) {
+              const tree = decisionTrees?.[foundSymptom.decisionTreeId];
+              if (tree) {
+                const startNodeId = tree.startNode;
+                const startNode = tree.nodes[startNodeId];
+                setTriageData(prev => ({
+                  ...prev,
+                  treeId: foundSymptom.decisionTreeId,
+                  currentNodeId: startNodeId,
+                  currentNode: startNode,
+                  answersMap: {},
+                  pendingMultiSelect: []
+                }));
+                addBotMessage(startNode.question);
+                setCurrentStep('tree_node');
+                return;
+              }
+            }
+
+            addBotMessage(followUpQuestions?.duration?.question || 'How long have you been experiencing this problem?');
+            setCurrentStep('duration');
+            return;
+          }
+        }
+
+        if (bodyArea && currentStep === 'body_area') {
+          handleSelectBodyArea(bodyArea);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('AI understand failed, falling back to synonym dictionary:', err);
+      setIsAiProcessing(false);
+      setIsTyping(false);
+    }
+
+    // 5. Fallback: Free-text symptom or body part matching via clinical synonym dictionary
     const match = matchFreeTextQuery(rawQuery);
 
     if (match.matchedType === 'general') {
@@ -516,7 +708,7 @@ export default function ChatBox({
       return;
     }
 
-    // 5. If match cannot be detected, suggest using system options
+    // 6. If match cannot be detected, suggest using system options
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
@@ -549,9 +741,22 @@ export default function ChatBox({
             </span>
           </div>
         </div>
-        <button className="reset-chat-btn" onClick={initChat} title="Reset Conversation">
-          <RotateCcw size={16} />
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button
+            className={`chatbox-sound-btn ${isSpeechEnabled ? 'active' : ''}`}
+            onClick={() => {
+              const next = !isSpeechEnabled;
+              setIsSpeechEnabled(next);
+              if (!next) window.speechSynthesis?.cancel();
+            }}
+            title={isSpeechEnabled ? 'Audio readout enabled (tap to mute)' : 'Audio readout muted (tap to enable)'}
+          >
+            {isSpeechEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+          </button>
+          <button className="reset-chat-btn" onClick={initChat} title="Reset Conversation">
+            <RotateCcw size={16} />
+          </button>
+        </div>
       </div>
 
       <div className="chatbox-messages">
@@ -654,15 +859,41 @@ export default function ChatBox({
         )}
       </div>
 
+      {isListening && (
+        <div className="chatbox-listening-banner">
+          <span>🔴 Listening... Speak naturally (e.g. "I have a severe headache since yesterday")</span>
+        </div>
+      )}
+      {speechError && (
+        <div style={{ background: '#fffbeb', color: '#b45309', padding: '6px 14px', fontSize: '0.76rem', borderTop: '1px solid #fde68a' }}>
+          <span>⚠️ {speechError}</span>
+        </div>
+      )}
       <form className="chatbox-input-form" onSubmit={handleTextSubmit}>
         <input
           type="text"
-          placeholder={currentStep === 'body_area' ? 'e.g. "My stomach hurts", "fever", or select an option above...' : 'Type a message or click an option above...'}
+          placeholder={
+            isListening
+              ? 'Listening to speech... Speak now'
+              : currentStep === 'body_area'
+              ? 'Type or speak: "severe headache since yesterday", "fever"...'
+              : 'Type, speak, or click an option above...'
+          }
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
+          disabled={isTyping || isAiProcessing}
         />
-        <button type="submit" disabled={!inputText.trim()}>
-          <Send size={16} />
+        <button
+          type="button"
+          onClick={isListening ? stopVoiceInput : startVoiceInput}
+          className={isListening ? 'voice-btn listening' : 'voice-btn'}
+          title={isListening ? 'Stop voice listening' : 'Speak your symptoms (Voice Input)'}
+          disabled={isTyping || isAiProcessing}
+        >
+          {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+        </button>
+        <button type="submit" disabled={!inputText.trim() || isTyping || isAiProcessing} title="Send message">
+          {isAiProcessing ? <Loader2 size={16} className="duo-spin" /> : <Send size={16} />}
         </button>
       </form>
     </div>
