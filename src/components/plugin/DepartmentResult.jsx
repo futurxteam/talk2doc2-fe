@@ -23,10 +23,14 @@ export default function DepartmentResult({ recommendation, onReset }) {
     emergencyNotice,
     urgency,
     bodyAreaName,
+    symptomArea,
     symptomName,
     duration,
     severity
   } = recommendation;
+
+  // Prefer the specific symptom location over the broad body area category
+  const displayArea = symptomArea || bodyAreaName;
 
   const handleScrollToDoctors = () => {
     const el = document.querySelector('.doctors-triage-section');
@@ -92,8 +96,8 @@ export default function DepartmentResult({ recommendation, onReset }) {
 
       <div className="result-summary-grid">
         <div className="summary-item">
-          <span className="summary-label">Reported Area:</span>
-          <span className="summary-val">{bodyAreaName}</span>
+          <span className="summary-label">Symptom Location:</span>
+          <span className="summary-val">{displayArea}</span>
         </div>
         <div className="summary-item">
           <span className="summary-label">Primary Symptom:</span>
@@ -124,7 +128,7 @@ export default function DepartmentResult({ recommendation, onReset }) {
         <div className="why-clinical-grid">
           <div className="why-item">
             <span className="why-item-badge">Primary Indication</span>
-            <p><strong>{symptomName}</strong> localized in the <strong>{bodyAreaName}</strong> region directly indicates clinical evaluation by <strong>{department}</strong> specialists.</p>
+            <p><strong>{symptomName}</strong> localized in the <strong>{displayArea}</strong> region directly indicates clinical evaluation by <strong>{department}</strong> specialists.</p>
           </div>
 
           <div className="why-item">

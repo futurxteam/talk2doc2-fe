@@ -17,7 +17,7 @@ import {
 } from 'react-icons/lu';
 import QuickChips from './QuickChips';
 import DepartmentResult from './DepartmentResult';
-import { matchFreeTextQuery, matchDurationQuery, matchSeverityQuery, isNegativeResponse, extractFullTriageIntent, loadSynonymsFromApi } from '../../utils/symptomSynonyms';
+import { matchFreeTextQuery, matchDurationQuery, matchSeverityQuery, isNegativeResponse, extractFullTriageIntent, loadSynonymsFromApi, detectFrontendLanguage } from '../../utils/symptomSynonyms';
 
 export default function ChatBox({
   selectedBodyPart,
@@ -51,6 +51,8 @@ export default function ChatBox({
   const voiceModeRef = useRef(false);
   const voiceTranscriptRef = useRef('');
   const voiceProcessingRef = useRef(false);
+  // Tracks detected conversation language ('english' | 'manglish' | 'malayalam_script')
+  const convLangRef = useRef('english');
   const [understoodData, setUnderstoodData] = useState({
     bodyArea: null,
     symptomName: null,
@@ -154,7 +156,7 @@ export default function ChatBox({
         if (recognitionRef.current) {
           recognitionRef.current.abort();
         }
-      } catch {}
+      } catch { }
       recognitionRef.current = null;
 
       window.speechSynthesis.cancel();
@@ -174,6 +176,20 @@ export default function ChatBox({
         return;
       }
 
+      // 🔠 Strip Manglish and Malayalam script — TTS only speaks English
+      // Remove Malayalam Unicode characters (U+0D00–U+0D7F)
+      const englishOnly = cleanText
+        .replace(/[\u0D00-\u0D7F]+/g, '')  // Remove Malayalam script
+        .replace(/\b(ayyoo?|ayyo|enikku?|eniku|vedana|vedanikkunnu|vedanayo|pallu|thala|thalavedana|vayaru|vayar|vayattil|kazhuthu|nenju|nenjil|chardi|pani|sheenam|ksheenam|tharippu|veekkam|chori|chorichil|moothram|innu|inn|innumuthal|innale|ravile|ippol|kurachu|kure|neram|neramayi|divasam|divasamayi|bayankara|bhayankara|cheriya|cheruthaano|cheruthano|nallath|nalla|und|undu|illa|vannu|poyi|aayi|kayyu|kaalu|potti|odivu|aano|alla|kooduthal|sahikkan|sahikkan pattatha|sahikkan pattunnu|muthal|koluthipidutham|koluthal|chora|kazhikkan|urakkam|maravippu|kashtam|kashtamayi|pedikkenda|pedikkanda|namukku|kaanam|kandam|manasilayi|seri|sari|evide|avide|enthu|ethra|eppozh|eppol|prashnam|parayamo|parayunnu|parayunn|budhimuttu|budhimuttanallo|budhimuttundalle|kashtamanallo|kashtapedukayanalle|thudangiyathu|thudangiyittu|thudangi|eppozhanu|inno|atho|divasamo|pattatha|kashtamanallo|vedanikkunnu|ayyoo|manasilaayi|kandupidikkam|venam|venda|engane|valare|arinjhu|seri|sheri|ellaam|aakum|evide|muthal|und ennu|ennu ketto|ennu arinjhu|sheri aakum)\\b/gi, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
+      // If nothing English remains after stripping (pure Manglish input), skip TTS
+      if (!englishOnly || englishOnly.length < 3) {
+        resolve();
+        return;
+      }
+
       // 📢 Console print of AI agent voice text for testing
       console.log(
         '%c[AI Agent Voice Output]%c ' + cleanText,
@@ -183,7 +199,7 @@ export default function ChatBox({
 
       setVoiceStatus('speaking');
 
-      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const utterance = new SpeechSynthesisUtterance(englishOnly);
       utterance.lang = 'en-US';
       utterance.rate = voiceSpeed || 0.88; // User selected or default 0.88 slow pace
       utterance.pitch = 1.0;
@@ -431,7 +447,7 @@ export default function ChatBox({
 
     // Stop recognition during AI processing
     isRecognizingRef.current = false;
-    try { recognitionRef.current?.abort(); } catch {}
+    try { recognitionRef.current?.abort(); } catch { }
     recognitionRef.current = null;
 
     voiceProcessingRef.current = true;
@@ -863,7 +879,7 @@ export default function ChatBox({
         nextNode.question,
         {},
         {
-          speakMessage: !voiceModeRef.current
+          speakMessage: false  // Voice mode uses explicit speakAgent() below
         }
       );
 
@@ -960,6 +976,7 @@ export default function ChatBox({
         department: 'General Medicine',
         altDepartment: 'Primary Care / Internal Medicine',
         bodyAreaName: bodyArea || 'Head & Neck',
+        symptomArea: triageData.symptomName ? undefined : (bodyArea || 'Head & Neck'),
         symptomName: triageData.symptomName || 'Headache / General Symptoms',
         urgency: 'ROUTINE',
         reason: 'When symptoms are mixed or non-emergency, a General Medicine physician performs initial clinical examination and baseline tests to initiate care or recommend appropriate sub-specialists.',
@@ -988,33 +1005,42 @@ export default function ChatBox({
     setVoiceStatus('idle');
     setInteractionMode('manual');
   };
-  const handleSelectDuration = (durationOpt) => {
+  // userTyped: the raw text the user typed (shown in bubble), vs durationOpt.label (stored as data)
+  // skipUserMsg: true when processUserInput already added the user bubble (avoids duplicate)
+  const handleSelectDuration = (durationOpt, userTyped = null, skipUserMsg = false) => {
     return new Promise((resolve) => {
       updateTriageData(prev => ({
         ...prev,
         duration: durationOpt.label
       }));
 
-      addUserMessage(durationOpt.label);
+      // Only add user bubble if not already added by processUserInput
+      if (!skipUserMsg) {
+        addUserMessage(userTyped || durationOpt.label);
+      }
       setIsTyping(true);
 
-      const severityQuestion =
-        followUpQuestions?.severity?.question ||
-        'How severe is the discomfort?';
+      // Chat bubble: show in conversation language (Manglish/Malayalam/English)
+      const lang = convLangRef.current;
+      let severityQuestion;
+      if (lang === 'manglish') {
+        severityQuestion = 'Vedana engane und — cheruthano, nallath aano, atho sahikkan pattatha bayankara vedana aano?';
+      } else if (lang === 'malayalam_script') {
+        severityQuestion = 'വേദന എഷ്ടുണ്ട് — ചെറുതാണോ, കൂടുതലാണോ, അതോ ഭയങ്കരമായോ?';
+      } else {
+        severityQuestion = followUpQuestions?.severity?.question || 'How severe is the discomfort?';
+      }
+
+      // TTS: always English — browser TTS cannot read Manglish or Malayalam script
+      const severityQuestionTTS = followUpQuestions?.severity?.question || 'How severe is the discomfort?';
 
       setTimeout(async () => {
         setIsTyping(false);
 
-        addBotMessage(
-          severityQuestion,
-          {},
-          {
-            speakMessage: !voiceModeRef.current
-          }
-        );
+        addBotMessage(severityQuestion, {}, { speakMessage: false });
 
         if (voiceModeRef.current) {
-          await speakAgent(severityQuestion);
+          await speakAgent(severityQuestionTTS); // English only for TTS
         }
 
         updateCurrentStep('severity');
@@ -1022,10 +1048,13 @@ export default function ChatBox({
       }, 350);
     });
   };
-  const handleSelectSeverity = async (severityOpt) => {
+  const handleSelectSeverity = async (severityOpt, userTyped = null, skipUserMsg = false) => {
     const updatedData = { ...triageDataRef.current, severity: severityOpt.id };
     updateTriageData(updatedData);
-    addUserMessage(severityOpt.label);
+    // Only add user bubble if not already added by processUserInput
+    if (!skipUserMsg) {
+      addUserMessage(userTyped || severityOpt.label);
+    }
     setIsTyping(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/recommend`, {
@@ -1071,6 +1100,7 @@ export default function ChatBox({
         department: 'General Medicine',
         altDepartment: 'Primary Care / Internal Medicine',
         bodyAreaName: triageDataRef.current.bodyArea || 'General Area',
+        symptomArea: undefined,
         symptomName: triageDataRef.current.symptomName || 'Reported Symptoms',
         duration: triageDataRef.current.duration || 'Not specified',
         severity: severityOpt.id,
@@ -1253,6 +1283,14 @@ export default function ChatBox({
 
     const query = rawQuery.trim();
 
+    // Update detected conversation language (skip very short inputs like "inn" that won't detect reliably)
+    if (query.length > 3) {
+      const detectedLang = detectFrontendLanguage(query);
+      if (detectedLang !== 'english') {
+        convLangRef.current = detectedLang; // Stick to Manglish/Malayalam once detected
+      }
+    }
+
     console.log(
       `[Talk2Doc] Processing ${source} input:`,
       query
@@ -1290,15 +1328,45 @@ export default function ChatBox({
             label: query
           };
 
-        await handleSelectDuration(opt);
+        await handleSelectDuration(opt, query, true); // skipUserMsg=true: processUserInput already added the bubble
         return;
       }
 
+      // ── AI Fallback for duration ──
       setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        addBotMessage(`I couldn't match "${query}" to a duration timeframe.`);
-      }, 350);
+      try {
+        const aiRes = await fetch(`${API_BASE_URL}/api/ai/understand-symptoms`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: query,
+            currentStep: 'duration',
+            currentContext: {
+              bodyArea: triageNow.bodyArea,
+              symptomId: triageNow.symptomId,
+              symptomName: triageNow.symptomName,
+              duration: triageNow.duration,
+              severity: triageNow.severity
+            }
+          })
+        });
+        const aiData = await aiRes.json();
+        const aiDurId = aiData?.extracted?.durationId;
+        if (aiDurId) {
+          setIsTyping(false);
+          const opt = followUpQuestions?.duration?.options?.find(o => o.id === aiDurId)
+            || { id: aiDurId, label: aiData?.extracted?.duration || aiDurId };
+          await handleSelectDuration(opt, query, true); // skipUserMsg=true: processUserInput already added the bubble
+          return;
+        }
+      } catch { /* AI unavailable, fall through */ }
+
+      setIsTyping(false);
+      addBotMessage(
+        `Hmm, I didn't catch that — did you mean today, yesterday, a few days, or longer? You can also tap a button below.`,
+        {},
+        { speakMessage: false }
+      );
       return;
     }
 
@@ -1317,17 +1385,48 @@ export default function ChatBox({
             label: query
           };
 
-        await handleSelectSeverity(opt);
+        await handleSelectSeverity(opt, query, true); // skipUserMsg=true: processUserInput already added the bubble
         return;
       }
 
+      // ── AI Fallback for severity ──
       setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        addBotMessage(`I couldn't match "${query}" to a severity level.`);
-      }, 350);
+      try {
+        const aiRes = await fetch(`${API_BASE_URL}/api/ai/understand-symptoms`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: query,
+            currentStep: 'severity',
+            currentContext: {
+              bodyArea: triageNow.bodyArea,
+              symptomId: triageNow.symptomId,
+              symptomName: triageNow.symptomName,
+              duration: triageNow.duration,
+              severity: triageNow.severity
+            }
+          })
+        });
+        const aiData = await aiRes.json();
+        const aiSevId = aiData?.extracted?.severityId;
+        if (aiSevId) {
+          setIsTyping(false);
+          const opt = followUpQuestions?.severity?.options?.find(o => o.id === aiSevId)
+            || { id: aiSevId, label: aiData?.extracted?.severity || aiSevId };
+          await handleSelectSeverity(opt, query, true); // skipUserMsg=true: processUserInput already added the bubble
+          return;
+        }
+      } catch { /* AI unavailable, fall through */ }
+
+      setIsTyping(false);
+      addBotMessage(
+        `I didn't catch that — is the pain mild, moderate, or severe? You can tap a button below.`,
+        {},
+        { speakMessage: false }
+      );
       return;
     }
+
 
     // ==========================================
     // 3. DECISION TREE
@@ -1645,8 +1744,7 @@ export default function ChatBox({
         reply,
         {},
         {
-          speakMessage:
-            source !== 'voice'
+          speakMessage: false  // Voice mode uses explicit speakAgent() below
         }
       );
 
@@ -1697,8 +1795,7 @@ export default function ChatBox({
             startNode.question,
             {},
             {
-              speakMessage:
-                source !== 'voice'
+              speakMessage: false  // Voice mode uses explicit speakAgent() below
             }
           );
 
@@ -1728,8 +1825,7 @@ export default function ChatBox({
         durationQuestion,
         {},
         {
-          speakMessage:
-            source !== 'voice'
+          speakMessage: false  // Voice mode uses explicit speakAgent() below
         }
       );
 
@@ -1771,8 +1867,7 @@ export default function ChatBox({
       clarification,
       {},
       {
-        speakMessage:
-          source !== 'voice'
+        speakMessage: false  // Voice mode uses explicit speakAgent() below
       }
     );
 
@@ -2071,7 +2166,7 @@ export default function ChatBox({
               className={`voice-agent-orb ${voiceStatus}`}
               onClick={() => {
                 if (isListening) {
-                  try { recognitionRef.current?.stop(); } catch {}
+                  try { recognitionRef.current?.stop(); } catch { }
                   setIsListening(false);
                   isRecognizingRef.current = false;
                   setVoiceStatus('idle');
@@ -2091,17 +2186,17 @@ export default function ChatBox({
               <div className="sphere-ring r-vert"></div>
               <div className="voice-agent-core">
                 {voiceStatus === 'listening' ? <Mic size={22} /> :
-                 voiceStatus === 'speaking' ? <Volume2 size={22} /> :
-                 voiceStatus === 'thinking' ? <Loader2 size={20} className="duo-spin" /> :
-                 <Bot size={20} />}
+                  voiceStatus === 'speaking' ? <Volume2 size={22} /> :
+                    voiceStatus === 'thinking' ? <Loader2 size={20} className="duo-spin" /> :
+                      <Bot size={20} />}
               </div>
             </div>
 
             <p className="voice-agent-status-title">
               {voiceStatus === 'listening' ? "I'm listening..." :
-               voiceStatus === 'thinking' ? 'One moment...' :
-               voiceStatus === 'speaking' ? 'Talk2Doc is speaking...' :
-               currentStep === 'result' ? 'All done!' : 'Tap the sphere or speak'}
+                voiceStatus === 'thinking' ? 'One moment...' :
+                  voiceStatus === 'speaking' ? 'Talk2Doc is speaking...' :
+                    currentStep === 'result' ? 'All done!' : 'Tap the sphere or speak'}
             </p>
             <p className="voice-agent-status-text">
               {voiceTranscript
@@ -2223,7 +2318,7 @@ export default function ChatBox({
               className={`voice-agent-mic ${isListening ? 'active' : ''}`}
               onClick={() => {
                 if (isListening) {
-                  try { recognitionRef.current?.stop(); } catch {}
+                  try { recognitionRef.current?.stop(); } catch { }
                   setIsListening(false);
                   isRecognizingRef.current = false;
                   setVoiceStatus('idle');
