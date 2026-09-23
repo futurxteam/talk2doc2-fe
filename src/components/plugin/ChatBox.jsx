@@ -4,7 +4,9 @@ import {
   LuSend as Send,
   LuBot as Bot,
   LuUser as User,
+  LuRotateCcw,
   LuRotateCcw as RotateCcw,
+  LuCheck,
   LuCheck as Check,
   LuArrowRight as ArrowRight,
   LuMic as Mic,
@@ -13,12 +15,271 @@ import {
   LuVolumeX as VolumeX,
   LuLoader as Loader2,
   LuSettings as Settings,
-  LuX as X
+  LuX as X,
+  LuMapPin,
+  LuAward,
+  LuCalendar,
+  LuClock,
+  LuFilter,
+  LuShield,
+  LuRefreshCw
 } from 'react-icons/lu';
 import QuickChips from './QuickChips';
 import DepartmentResult from './DepartmentResult';
+import BookAppointmentWidget from '../../pages/BookAppointment';
 import { saveAssessmentResult } from '../../api/usersApi';
 import { matchFreeTextQuery, matchDurationQuery, matchSeverityQuery, isNegativeResponse, extractFullTriageIntent, loadSynonymsFromApi, detectFrontendLanguage } from '../../utils/symptomSynonyms';
+
+/* ========================================================
+   In-Chat Doctor List & Selection Component
+   ======================================================== */
+function InChatDoctorList({
+  doctors = [],
+  selectedDoctor = null,
+  onSelectDoctor,
+  onChangeDoctor,
+  radius = 10,
+  onChangeRadius,
+  insurance = 'all',
+  onChangeInsurance,
+  availableInsurances = [],
+  loading = false,
+  isFallback = false,
+  fallbackMessage = null,
+  showInlineBooking = false,
+  onToggleBooking,
+  assessmentId = null,
+  onMoveToUI = null
+}) {
+  const RADIUS_OPTIONS = [5, 10, 15, 25, 50];
+
+  return (
+    <div className="chatbox-doctor-section">
+      {/* Filter Controls Bar */}
+      <div className="chatbox-filter-controls">
+        <span className="chatbox-filter-label">
+          <LuMapPin size={13} /> Distance:
+        </span>
+        <div className="chatbox-radius-chips">
+          {RADIUS_OPTIONS.map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={`chatbox-radius-chip ${radius === r ? 'active' : ''}`}
+              onClick={() => onChangeRadius(r)}
+            >
+              {r} km
+            </button>
+          ))}
+        </div>
+
+        <div className="chatbox-insurance-selector">
+          <span className="chatbox-filter-label">
+            <LuShield size={13} /> Insurance:
+          </span>
+          <select
+            className="chatbox-insurance-select"
+            value={insurance}
+            onChange={(e) => onChangeInsurance(e.target.value)}
+          >
+            <option value="all">All Insurances</option>
+            {availableInsurances.map((ins, i) => (
+              <option key={i} value={ins}>
+                {ins}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {onMoveToUI && (
+          <button
+            type="button"
+            className="chatbox-show-ui-btn"
+            onClick={onMoveToUI}
+            title="Move doctor list to panel below the chat"
+          >
+            📌 Show in UI
+          </button>
+        )}
+      </div>
+
+      {/* Status Bar */}
+      <div className="chatbox-status-summary">
+        <span>
+          {loading
+            ? '🔄 Finding doctors near you...'
+            : `${doctors.length} doctor${doctors.length === 1 ? '' : 's'} within ${radius} km`}
+        </span>
+        {insurance !== 'all' && (
+          <span style={{ color: '#0284c7', fontWeight: 600 }}>
+            🛡️ {insurance}
+          </span>
+        )}
+      </div>
+
+      {isFallback && fallbackMessage && (
+        <div style={{ background: '#fffbeb', color: '#b45309', padding: '8px 12px', borderRadius: 8, fontSize: '0.76rem', border: '1px solid #fde68a' }}>
+          ℹ️ {fallbackMessage}
+        </div>
+      )}
+
+      {/* Current Selected Doctor Card */}
+      {selectedDoctor ? (
+        <div className="chatbox-selected-doctor-card" id="chatbox-selected-doctor-card">
+          <div className="chatbox-selected-header">
+            <div className="chatbox-selected-badge">
+              <LuCheck size={16} /> Current Selected Doctor
+            </div>
+            <button
+              type="button"
+              className="chatbox-change-doc-btn"
+              onClick={onChangeDoctor}
+              title="Change to another doctor"
+            >
+              <LuRotateCcw size={13} /> Change Doctor
+            </button>
+          </div>
+
+          <div className="chatbox-doctor-card-top">
+            <div className="chatbox-doc-avatar">
+              {selectedDoctor.fullName?.replace('Dr.', '').trim().slice(0, 2).toUpperCase() || 'DR'}
+            </div>
+            <div className="chatbox-doc-info">
+              <div className="chatbox-doc-name-row">
+                <h4 className="chatbox-doc-name">
+                  {selectedDoctor.fullName.startsWith('Dr.') ? selectedDoctor.fullName : `Dr. ${selectedDoctor.fullName}`}
+                </h4>
+              </div>
+              <div className="chatbox-doc-specialty">{selectedDoctor.specialization}</div>
+              <div className="chatbox-doc-hospital">
+                🏥 {selectedDoctor.hospitalName || 'Partner Hospital'}
+              </div>
+            </div>
+          </div>
+
+          <div className="chatbox-doc-badges">
+            {selectedDoctor.distanceKm && (
+              <span className="chatbox-badge distance">
+                <LuMapPin size={11} /> {selectedDoctor.distanceKm} km away
+              </span>
+            )}
+            {selectedDoctor.yearsOfExperience > 0 && (
+              <span className="chatbox-badge experience">
+                <LuAward size={11} /> {selectedDoctor.yearsOfExperience} yrs exp
+              </span>
+            )}
+            {selectedDoctor.consultationFee > 0 && (
+              <span className="chatbox-badge fee">
+                ₹{selectedDoctor.consultationFee}
+              </span>
+            )}
+            {Array.isArray(selectedDoctor.acceptedInsurances) && selectedDoctor.acceptedInsurances.slice(0, 2).map((ins, idx) => (
+              <span key={idx} className="chatbox-badge insurance-tag">
+                🛡️ {ins}
+              </span>
+            ))}
+          </div>
+
+          <div className="chatbox-selected-actions">
+            <button
+              type="button"
+              className="chatbox-book-appointment-btn"
+              onClick={onToggleBooking}
+            >
+              <LuCalendar size={16} />
+              {showInlineBooking ? 'Close Booking' : '📅 Book Appointment Now'}
+            </button>
+
+            {showInlineBooking && (
+              <div className="chatbox-inline-booking-box">
+                <BookAppointmentWidget
+                  doctorId={selectedDoctor._id}
+                  assessmentId={assessmentId}
+                  onBooked={() => {
+                    alert('Appointment booked successfully!');
+                    onToggleBooking();
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Doctor list */
+        <div className="chatbox-doctor-list">
+          {doctors.length === 0 && !loading && (
+            <div style={{ textAlign: 'center', padding: '20px', color: '#64748b', fontSize: '0.82rem' }}>
+              No doctors found within {radius} km. Try increasing the radius to 25 km or 50 km, or selecting "All Insurances".
+            </div>
+          )}
+
+          {doctors.map((doc, idx) => {
+            const initials = doc.fullName
+              ? doc.fullName.replace('Dr.', '').trim().slice(0, 2).toUpperCase()
+              : 'DR';
+
+            return (
+              <div
+                key={doc._id || idx}
+                className="chatbox-doctor-card"
+                onClick={() => onSelectDoctor(doc)}
+              >
+                <div className="chatbox-doctor-card-top">
+                  <div className="chatbox-doc-avatar">{initials}</div>
+                  <div className="chatbox-doc-info">
+                    <div className="chatbox-doc-name-row">
+                      <h4 className="chatbox-doc-name">
+                        #{idx + 1} {doc.fullName.startsWith('Dr.') ? doc.fullName : `Dr. ${doc.fullName}`}
+                      </h4>
+                    </div>
+                    <div className="chatbox-doc-specialty">{doc.specialization}</div>
+                    <div className="chatbox-doc-hospital">
+                      🏥 {doc.hospitalName || 'Partner Hospital'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="chatbox-doc-badges">
+                  {doc.distanceKm && (
+                    <span className="chatbox-badge distance">
+                      <LuMapPin size={11} /> {doc.distanceKm} km away
+                    </span>
+                  )}
+                  {doc.yearsOfExperience > 0 && (
+                    <span className="chatbox-badge experience">
+                      <LuAward size={11} /> {doc.yearsOfExperience} yrs exp
+                    </span>
+                  )}
+                  {doc.consultationFee > 0 && (
+                    <span className="chatbox-badge fee">
+                      ₹{doc.consultationFee}
+                    </span>
+                  )}
+                  {Array.isArray(doc.acceptedInsurances) && doc.acceptedInsurances.slice(0, 2).map((ins, i) => (
+                    <span key={i} className="chatbox-badge insurance-tag">
+                      🛡️ {ins}
+                    </span>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="chatbox-select-doc-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectDoctor(doc);
+                  }}
+                >
+                  <LuCheck size={14} /> Select This Doctor
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ChatBox({
   selectedBodyPart,
@@ -27,7 +288,8 @@ export default function ChatBox({
   followUpQuestions,
   decisionTrees,
   followUpProfiles = {},
-  onRecommendation
+  onRecommendation,
+  onShowDoctorsInUI
 }) {
   const [messages, setMessages] = useState([]);
   // Steps: 'body_area' | 'symptom_transition' | 'symptom' | 'tree_node' | 'duration' | 'severity' | 'result'
@@ -82,6 +344,51 @@ export default function ChatBox({
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
+
+  // In-Chat Doctor Suggestion & Selection State
+  const [inChatDoctors, setInChatDoctors] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [doctorRadius, setDoctorRadius] = useState(10);
+  const [doctorInsurance, setDoctorInsurance] = useState('all');
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+  const [isFallbackDoctors, setIsFallbackDoctors] = useState(false);
+  const [fallbackDoctorMessage, setFallbackDoctorMessage] = useState(null);
+  const [showInlineBooking, setShowInlineBooking] = useState(false);
+  const [availableInsurances, setAvailableInsurances] = useState([
+    'Star Health',
+    'Care Health',
+    'HDFC ERGO',
+    'ICICI Lombard',
+    'Max Bupa / Niva Bupa',
+    'United India Insurance',
+    'Medicare'
+  ]);
+  const [savedAssessmentId, setSavedAssessmentId] = useState(null);
+  const userCoordsRef = useRef(null);
+  const [userCoords, setUserCoords] = useState(null);
+
+  // Controls whether doctor list renders inside chat vs. page UI
+  const [showDoctorsInChat, setShowDoctorsInChat] = useState(true);
+
+  const inChatDoctorsRef = useRef([]);
+  useEffect(() => {
+    inChatDoctorsRef.current = inChatDoctors;
+  }, [inChatDoctors]);
+
+  const selectedDoctorRef = useRef(null);
+  useEffect(() => {
+    selectedDoctorRef.current = selectedDoctor;
+  }, [selectedDoctor]);
+
+  const doctorRadiusRef = useRef(10);
+  useEffect(() => {
+    doctorRadiusRef.current = doctorRadius;
+  }, [doctorRadius]);
+
+  const doctorInsuranceRef = useRef('all');
+  useEffect(() => {
+    doctorInsuranceRef.current = doctorInsurance;
+  }, [doctorInsurance]);
 
   // Voice Input & Output State
   const [isListening, setIsListening] = useState(false);
@@ -163,13 +470,27 @@ export default function ChatBox({
 
     if (token) {
       try {
-        await saveAssessmentResult(payload);
+        const saveRes = await saveAssessmentResult(payload);
+        if (saveRes?.assessment?._id || saveRes?._id) {
+          setSavedAssessmentId(saveRes.assessment?._id || saveRes._id);
+        }
         console.log("✅ Triage report persisted to patient account");
       } catch (err) {
         console.error("Failed to save triage report to patient account:", err);
       }
     }
   };
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/auth/insurance-providers`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data.providers) && data.providers.length > 0) {
+          setAvailableInsurances(data.providers.map(p => typeof p === 'string' ? p : p.name || p));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     loadSynonymsFromApi(API_BASE_URL);
@@ -199,6 +520,7 @@ export default function ChatBox({
   };
 
   const messagesEndRef = useRef(null);
+  const messagesBoxRef = useRef(null);
   const selectingAreaRef = useRef(false);
 
   // Text-To-Speech (Voice Output) with neural voice selection and console logging
@@ -645,14 +967,18 @@ export default function ChatBox({
 
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll within the chat container only — don't use scrollIntoView which scrolls the whole page
+    const box = messagesBoxRef.current;
+    if (box) {
+      box.scrollTop = box.scrollHeight;
+    }
   }, [messages, isTyping]);
 
   useEffect(() => {
     if (onRecommendation) {
       onRecommendation(recommendation);
     }
-    if (recommendation && currentStep === 'result' && !hasSavedTriageRef.current) {
+    if (recommendation && (currentStep === 'result' || currentStep === 'doctor_selection' || currentStep === 'doctor_selected') && !hasSavedTriageRef.current) {
       hasSavedTriageRef.current = true;
       persistTriageReport(recommendation, triageDataRef.current || triageData);
     }
@@ -669,11 +995,12 @@ export default function ChatBox({
     if (
       selectedBodyPart &&
       currentStep === 'body_area' &&
+      !triageDataRef.current.symptomId &&
       selectedBodyPart !== triageData.bodyArea &&
       selectedBodyPart !== triageDataRef.current.bodyArea &&
       !selectingAreaRef.current
     ) {
-      handleSelectBodyArea(selectedBodyPart, true);
+      handleSelectBodyArea(selectedBodyPart, true, true);
     }
   }, [selectedBodyPart]);
 
@@ -739,6 +1066,16 @@ export default function ChatBox({
 
     updateTriageData(initialTriage);
     setRecommendation(null);
+    setInChatDoctors([]);
+    setSelectedDoctor(null);
+    setDoctorRadius(10);
+    setDoctorInsurance('all');
+    setShowInlineBooking(false);
+    setIsFallbackDoctors(false);
+    setFallbackDoctorMessage(null);
+    setSavedAssessmentId(null);
+    setShowDoctorsInChat(true);
+    if (onShowDoctorsInUI) onShowDoctorsInUI(false);
   };
 
   const addBotMessage = (text, extra = {}, options = {}) => {
@@ -765,6 +1102,256 @@ export default function ChatBox({
     if (speakMessage === true) {
       speakAgent(text);
     }
+  };
+
+  /* ========================================================
+     In-Chat Doctor Fetch & State Management Helpers
+     ======================================================== */
+  const fetchInChatDoctors = async (dept, radiusKm = 10, insurance = 'all') => {
+    const targetDept = dept || recommendation?.department || "General Medicine";
+    setLoadingDoctors(true);
+    setDoctorRadius(radiusKm);
+    setDoctorInsurance(insurance);
+
+    const queryNearby = async (lat, lng) => {
+      try {
+        const url = `${API_BASE_URL}/api/user/nearby?lat=${lat}&lng=${lng}&specialty=${encodeURIComponent(targetDept)}&radius=${radiusKm}&insurance=${encodeURIComponent(insurance)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success && data.groups) {
+          const list = Object.values(data.groups).flat();
+          setInChatDoctors(list);
+          setIsFallbackDoctors(Boolean(data.isFallback));
+          setFallbackDoctorMessage(data.fallbackMessage || null);
+          return list;
+        }
+      } catch (err) {
+        console.warn('Nearby fetch failed:', err);
+      }
+      return null;
+    };
+
+    const fallbackTriageDocs = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/triage/doctors?department=${encodeURIComponent(targetDept)}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.doctors)) {
+          const docs = data.doctors.map(d => ({
+            ...d,
+            distanceKm: d.distanceKm || 'Nearby',
+            acceptedInsurances: d.acceptedInsurances || []
+          }));
+          const filtered = (insurance && insurance !== 'all')
+            ? docs.filter(d => (d.acceptedInsurances || []).some(ins => ins.toLowerCase().includes(insurance.toLowerCase())))
+            : docs;
+          setInChatDoctors(filtered);
+          setIsFallbackDoctors(Boolean(data.isFallback));
+          setFallbackDoctorMessage(data.fallbackMessage || null);
+          return filtered;
+        }
+      } catch (err) {
+        console.error('Triage doctors fallback error:', err);
+      }
+      return [];
+    };
+
+    try {
+      if (userCoordsRef.current) {
+        const list = await queryNearby(userCoordsRef.current.lat, userCoordsRef.current.lng);
+        if (!list || list.length === 0) {
+          await fallbackTriageDocs();
+        }
+      } else if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            userCoordsRef.current = coords;
+            setUserCoords(coords);
+            const list = await queryNearby(coords.lat, coords.lng);
+            if (!list || list.length === 0) {
+              await fallbackTriageDocs();
+            }
+          },
+          async () => {
+            await fallbackTriageDocs();
+          },
+          { timeout: 5000, enableHighAccuracy: false }
+        );
+      } else {
+        await fallbackTriageDocs();
+      }
+    } finally {
+      setLoadingDoctors(false);
+    }
+  };
+
+  const scrollToSelectedDoctor = () => {
+    setTimeout(() => {
+      const el = document.getElementById('chatbox-selected-doctor-card');
+      const container = messagesBoxRef.current;
+      if (el && container) {
+        const elRect = el.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const relativeTop = elRect.top - containerRect.top + container.scrollTop;
+        container.scrollTo({
+          top: Math.max(0, relativeTop - 15),
+          behavior: 'smooth'
+        });
+      } else if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 120);
+  };
+
+  const handleSelectDoctor = (doc, autoOpenBooking = false) => {
+    setSelectedDoctor(doc);
+    updateCurrentStep('doctor_selected');
+    if (autoOpenBooking) {
+      setShowInlineBooking(true);
+    }
+    const docName = doc.fullName.startsWith('Dr.') ? doc.fullName : `Dr. ${doc.fullName}`;
+    const botMsg = `Selected ${docName} (${doc.specialization} at ${doc.hospitalName || 'Partner Hospital'}). You can book an appointment below or say 'change doctor' to pick another doctor.`;
+    addBotMessage(botMsg);
+    if (voiceModeRef.current) {
+      speakAgent(`Selected ${docName}. Say 'book appointment' or 'change doctor'.`);
+    }
+    scrollToSelectedDoctor();
+  };
+
+  const handleChangeDoctor = () => {
+    setSelectedDoctor(null);
+    setShowInlineBooking(false);
+    updateCurrentStep('doctor_selection');
+    const botMsg = `Switched back to doctor suggestions. You can select another doctor, change the distance, or filter by insurance.`;
+    addBotMessage(botMsg);
+    if (voiceModeRef.current) {
+      speakAgent(`Switched back to doctor list. Please choose another doctor.`);
+    }
+  };
+
+  const handleChangeRadius = (newRadius) => {
+    setDoctorRadius(newRadius);
+    fetchInChatDoctors(recommendation?.department, newRadius, doctorInsuranceRef.current);
+    addBotMessage(`Updated radius to ${newRadius} km. Finding doctors near you...`);
+    if (voiceModeRef.current) {
+      speakAgent(`Updated radius to ${newRadius} kilometers.`);
+    }
+  };
+
+  const handleChangeInsurance = (newInsurance) => {
+    setDoctorInsurance(newInsurance);
+    fetchInChatDoctors(recommendation?.department, doctorRadiusRef.current, newInsurance);
+    addBotMessage(`Filtering doctors by insurance: ${newInsurance === 'all' ? 'All Providers' : newInsurance}...`);
+    if (voiceModeRef.current) {
+      speakAgent(`Filtered by ${newInsurance === 'all' ? 'all insurances' : newInsurance}.`);
+    }
+  };
+
+  const presentTriageAndDoctors = async (rec, resultHeading, finalMessage) => {
+    setRecommendation(rec);
+    updateCurrentStep('doctor_selection');
+    setSelectedDoctor(null);
+    setShowInlineBooking(false);
+
+    const newMsg = {
+      id: Date.now(),
+      sender: 'bot',
+      text: resultHeading,
+      isResultCard: true,
+      recommendation: rec,
+      lang: convLangRef.current
+    };
+    messagesRef.current = [...messagesRef.current, newMsg];
+    setMessages(prev => [...prev, newMsg]);
+
+    // Fetch doctors with default 10 km
+    await fetchInChatDoctors(rec.department, 10, 'all');
+
+    if (voiceModeRef.current) {
+      const speech = `${finalMessage || `Based on your symptoms, I recommend consulting ${rec.department}.`} I found doctors nearby within 10 kilometers. You can say 'select doctor 1', say a doctor's name, or change the distance.`;
+      await speakAgent(speech);
+    }
+  };
+
+  // Intent parsing helpers for doctor selection, radius, and insurance
+  const isChangeDoctorIntent = (q) => {
+    const l = q.toLowerCase();
+    return (
+      l.includes('change doctor') ||
+      l.includes('switch doctor') ||
+      l.includes('different doctor') ||
+      l.includes('another doctor') ||
+      l.includes('choose other') ||
+      l.includes('select other') ||
+      l.includes('back to doctors') ||
+      l.includes('show doctors')
+    );
+  };
+
+  const matchRadiusIntent = (q) => {
+    const l = q.toLowerCase();
+    const m = l.match(/(?:radius|distance|within|nearby|range)\s*(?:of|is|to|=)?\s*(\d+)/i) ||
+              l.match(/(\d+)\s*(?:km|kilometers|kms)/i);
+    if (m && m[1]) {
+      const val = parseInt(m[1], 10);
+      if (val >= 1 && val <= 100) return val;
+    }
+    return null;
+  };
+
+  const matchInsuranceIntent = (q, providerList = []) => {
+    const l = q.toLowerCase();
+    if (l.includes('all insurance') || l.includes('clear insurance') || l.includes('any insurance') || l.includes('no insurance')) {
+      return 'all';
+    }
+    const m = l.match(/(?:insurance|covered by|accepting|filter by insurance)\s*(?:is|to|:)?\s*([a-zA-Z0-9\s]+)/i);
+    const candidate = m ? m[1].trim() : l;
+    for (const p of providerList) {
+      if (candidate.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(candidate.toLowerCase())) {
+        return p;
+      }
+    }
+    if (m && m[1].trim().length >= 3) {
+      return m[1].trim();
+    }
+    return null;
+  };
+
+  const matchDoctorSelectIntent = (q, doctorList = []) => {
+    const l = q.toLowerCase();
+    const numMatch = l.match(/(?:doctor|option|number|#|select|choose)\s*(\d+)/i) ||
+                     l.match(/^(\d+)$/);
+    if (numMatch && numMatch[1]) {
+      const idx = parseInt(numMatch[1], 10) - 1;
+      if (idx >= 0 && idx < doctorList.length) {
+        return doctorList[idx];
+      }
+    }
+    if (l.includes('first') || l.includes('1st')) return doctorList[0] || null;
+    if (l.includes('second') || l.includes('2nd')) return doctorList[1] || null;
+    if (l.includes('third') || l.includes('3rd')) return doctorList[2] || null;
+    if (l.includes('fourth') || l.includes('4th')) return doctorList[3] || null;
+    if (l.includes('fifth') || l.includes('5th')) return doctorList[4] || null;
+
+    for (const doc of doctorList) {
+      const name = (doc.fullName || '').toLowerCase().replace(/^dr\.?\s*/i, '').trim();
+      const parts = name.split(/\s+/).filter(p => p.length >= 3);
+      if (l.includes(name) || parts.some(p => l.includes(p))) {
+        return doc;
+      }
+    }
+    return null;
+  };
+
+  const isBookAppointmentIntent = (q) => {
+    const l = q.toLowerCase();
+    return (
+      l.includes('book appointment') ||
+      l.includes('book slot') ||
+      l.includes('schedule appointment') ||
+      l.includes('book now') ||
+      l.includes('book with doctor')
+    );
   };
 
   const addUserMessage = (text) => {
@@ -853,15 +1440,7 @@ export default function ChatBox({
         reason: 'When symptoms involve multiple areas or are difficult to categorize, a General Medicine physician provides a thorough initial physical checkup and baseline diagnostic screening to guide appropriate care.',
         advice: 'Schedule a routine consultation with a general physician or internist for an overall health assessment.'
       };
-      setRecommendation(rec);
-      updateCurrentStep('result');
-      addBotMessage('Based on your selection, here is your recommended specialty department for consultation:', {
-        isResultCard: true,
-        recommendation: rec
-      });
-      if (voiceModeRef.current) {
-        finishVoiceConsultation();
-      }
+      presentTriageAndDoctors(rec, 'Based on your selection, here is your recommended specialty department for consultation:');
     }, 350);
   };
 
@@ -875,7 +1454,7 @@ export default function ChatBox({
     }
 
     updateTriageData(prev => ({ ...prev, bodyArea: partId }));
-    if (!skipUserMsg) {
+    if (!skipUserMsg && !fromSvg) {
       addUserMessage(`Discomfort in: ${displayName}`);
     }
 
@@ -1136,22 +1715,7 @@ export default function ChatBox({
         const finalMessage =
           `Based on what you've told me, I recommend consulting ${data.recommendation.department}.`;
 
-        setRecommendation(data.recommendation);
-        setCurrentStep('result');
-
-        setMessages(prev => [...prev, {
-          id: Date.now(),
-          sender: 'bot',
-          text: `Based on your responses, here is your recommended specialty:`,
-          isResultCard: true,
-          recommendation: data.recommendation
-        }]);
-
-        // 🔊 Speak recommendation before ending voice consultation
-        if (voiceModeRef.current) {
-          await speakAgent(finalMessage);
-          finishVoiceConsultation();
-        }
+        presentTriageAndDoctors(data.recommendation, `Based on your responses, here is your recommended specialty:`, finalMessage);
       } else {
         throw new Error('Fallback to General Medicine');
       }
@@ -1167,15 +1731,7 @@ export default function ChatBox({
         reason: 'When symptoms are mixed or non-emergency, a General Medicine physician performs initial clinical examination and baseline tests to initiate care or recommend appropriate sub-specialists.',
         advice: 'Consult a primary care physician / internist for clinical evaluation.'
       };
-      setRecommendation(fallbackRec);
-      setCurrentStep('result');
-      setMessages(prev => [...prev, {
-        id: Date.now(),
-        sender: 'bot',
-        text: 'Based on your symptoms, here is your recommended specialty department for consultation:',
-        isResultCard: true,
-        recommendation: fallbackRec
-      }]);
+      presentTriageAndDoctors(fallbackRec, 'Based on your symptoms, here is your recommended specialty department for consultation:');
     }
   };
   const finishVoiceConsultation = () => {
@@ -1281,9 +1837,6 @@ export default function ChatBox({
         const finalMessage =
           `Based on your symptoms, I recommend consulting ${data.recommendation.department}.`;
 
-        setRecommendation(data.recommendation);
-        updateCurrentStep('result');
-
         const lang = convLangRef.current;
         let resultHeading;
         if (lang === 'manglish') {
@@ -1294,22 +1847,7 @@ export default function ChatBox({
           resultHeading = `Based on your symptoms in ${data.recommendation.bodyAreaName}, here is your recommended specialty department for consultation:`;
         }
 
-        const newMsg = {
-          id: Date.now(),
-          sender: 'bot',
-          text: resultHeading,
-          isResultCard: true,
-          recommendation: data.recommendation,
-          lang: convLangRef.current
-        };
-        messagesRef.current = [...messagesRef.current, newMsg];
-        setMessages(prev => [...prev, newMsg]);
-
-        // 🔊 Speak recommendation before ending voice consultation
-        if (voiceModeRef.current) {
-          await speakAgent(finalMessage);
-          finishVoiceConsultation();
-        }
+        presentTriageAndDoctors(data.recommendation, resultHeading, finalMessage);
       } else {
         throw new Error('Fallback to General Medicine');
       }
@@ -1327,8 +1865,6 @@ export default function ChatBox({
         reason: 'A primary care evaluation will assist in comprehensive triaging and examination of your symptoms.',
         advice: 'Please consult a registered general physician.'
       };
-      setRecommendation(fallbackRec);
-      updateCurrentStep('result');
       const lang = convLangRef.current;
       let fallbackHeading;
       if (lang === 'manglish') {
@@ -1338,19 +1874,7 @@ export default function ChatBox({
       } else {
         fallbackHeading = 'Based on your symptoms, here is your recommended specialty department for consultation:';
       }
-      const newMsg = {
-        id: Date.now(),
-        sender: 'bot',
-        text: fallbackHeading,
-        isResultCard: true,
-        recommendation: fallbackRec,
-        lang: convLangRef.current
-      };
-      messagesRef.current = [...messagesRef.current, newMsg];
-      setMessages(prev => [...prev, newMsg]);
-      if (voiceModeRef.current) {
-        finishVoiceConsultation();
-      }
+      presentTriageAndDoctors(fallbackRec, fallbackHeading);
     }
   };
 
@@ -1529,8 +2053,6 @@ export default function ChatBox({
 
       if (data.success && data.recommendation) {
         const rec = data.recommendation;
-        setRecommendation(rec);
-        updateCurrentStep('result');
 
         const informalAcks = [
           `Oh bless you, I hear you — dealing with ${finalLabel} ${finalDuration.toLowerCase().includes('since') ? finalDuration : 'for ' + finalDuration} sounds really exhausting! Don't worry at all, I've got everything I need to get you sorted out.`,
@@ -1538,26 +2060,9 @@ export default function ChatBox({
           `Oh gosh, having ${finalLabel} for ${finalDuration} is no fun at all. Hang in there! Based on everything you told me, here is exactly who you should see:`
         ];
         const ackText = informalAcks[Math.floor(Math.random() * informalAcks.length)];
-
         const spokenMessage = `Alright! You should definitely see a ${rec.department} specialist for this. ${rec.advice ? rec.advice : ''} Don't worry at all, you'll be in good hands!`;
 
-        const newMsg = {
-          id: Date.now(),
-          sender: 'bot',
-          text: ackText,
-          isResultCard: true,
-          recommendation: rec
-        };
-
-        messagesRef.current = [...messagesRef.current, newMsg];
-        setMessages(prev => [...prev, newMsg]);
-
-        if (source === 'voice' || voiceModeRef.current) {
-          await speakAgent(spokenMessage);
-          voiceModeRef.current = false;
-          setIsListening(false);
-          setVoiceStatus('idle');
-        }
+        await presentTriageAndDoctors(rec, ackText, spokenMessage);
         return true;
       }
     } catch (err) {
@@ -1620,6 +2125,98 @@ export default function ChatBox({
     // ==========================================
     const stepNow = currentStepRef.current;
     const triageNow = triageDataRef.current;
+
+    // ==========================================
+    // 0B. DOCTOR SELECTION & MANAGEMENT
+    // ==========================================
+    if (stepNow === 'doctor_selection' || stepNow === 'doctor_selected') {
+      const qL = query.toLowerCase();
+
+      // 0. "Show in UI" — move doctor list to page-level panel below chat
+      if (
+        qL.includes('show in ui') ||
+        qL.includes('show outside') ||
+        qL.includes('show below') ||
+        qL.includes('show in page') ||
+        qL.includes('show panel')
+      ) {
+        setShowDoctorsInChat(false);
+        if (onShowDoctorsInUI) onShowDoctorsInUI(true);
+        addBotMessage('Doctor list is now shown in the panel below the chat. Scroll down to see all nearby doctors.');
+        if (source === 'voice' || voiceModeRef.current) {
+          await speakAgent('Moved the doctor list to the panel below. Please scroll down to view it.');
+        }
+        return;
+      }
+
+      // 0b. "Show in chat" — bring doctor list back into chat
+      if (
+        qL.includes('show in chat') ||
+        qL.includes('back in chat') ||
+        qL.includes('show here') ||
+        qL.includes('show inside')
+      ) {
+        setShowDoctorsInChat(true);
+        if (onShowDoctorsInUI) onShowDoctorsInUI(false);
+        addBotMessage('Doctor list is now shown right here in the chat.');
+        return;
+      }
+
+      // 1. Change Doctor intent
+      if (isChangeDoctorIntent(query)) {
+        handleChangeDoctor();
+        return;
+      }
+
+      // 2. Doctor Selection by name, number, or ordinal
+      const matchedDoc = matchDoctorSelectIntent(query, inChatDoctorsRef.current);
+      if (matchedDoc) {
+        const wantsBooking = query.toLowerCase().includes('book');
+        handleSelectDoctor(matchedDoc, wantsBooking);
+        return;
+      }
+
+      // 3. Radius intent ("radius 20km", "within 15 km", etc.)
+      const radiusVal = matchRadiusIntent(query);
+      if (radiusVal) {
+        handleChangeRadius(radiusVal);
+        return;
+      }
+
+      // 4. Insurance intent ("insurance Star Health", "filter by Medicare", etc.)
+      const insVal = matchInsuranceIntent(query, availableInsurances);
+      if (insVal) {
+        handleChangeInsurance(insVal);
+        return;
+      }
+
+      // 5. Book Appointment intent
+      if (isBookAppointmentIntent(query)) {
+        if (selectedDoctorRef.current) {
+          setShowInlineBooking(true);
+          scrollToSelectedDoctor();
+          const docName = selectedDoctorRef.current.fullName;
+          addBotMessage(`Opening appointment booking for ${docName}. Select your preferred date and time slot.`);
+          if (source === 'voice' || voiceModeRef.current) {
+            await speakAgent(`Opening appointment booking for ${docName}.`);
+          }
+        } else if (inChatDoctorsRef.current.length > 0) {
+          addBotMessage(`Please select a doctor first (e.g. "select 1" or click "Select This Doctor").`);
+          if (source === 'voice' || voiceModeRef.current) {
+            await speakAgent(`Please select a doctor first, for example say select doctor 1.`);
+          }
+        }
+        return;
+      }
+
+      // Fallback helpful guidance in doctor selection mode
+      const guidance = `You can select a doctor by typing their name or number (e.g. "select 1"), change search distance (e.g. "radius 20km"), filter insurance (e.g. "insurance Star Health"), or type "show in UI" to view the doctor list in the panel below.`;
+      addBotMessage(guidance);
+      if (source === 'voice' || voiceModeRef.current) {
+        await speakAgent(`You can select a doctor by saying doctor 1, or change distance by saying radius 20 kilometers.`);
+      }
+      return;
+    }
 
     if (stepNow === 'duration') {
       const durId = matchDurationQuery(query);
@@ -1974,7 +2571,11 @@ export default function ChatBox({
             }));
 
             if (onBodyPartSelect && targetAreaKey) {
+              selectingAreaRef.current = true;
               onBodyPartSelect(targetAreaKey);
+              setTimeout(() => {
+                selectingAreaRef.current = false;
+              }, 800);
             }
 
             // Decision tree
@@ -2023,8 +2624,12 @@ export default function ChatBox({
             // No decision tree
             if (durationId) {
               const durationOpt = followUpQuestions?.duration?.options?.find(o => o.id === durationId) || { id: durationId, label: duration || durationId };
-              await handleSelectDuration(durationOpt);
-              return;
+              if (!data.conversationalReply) {
+                await handleSelectDuration(durationOpt, null, true);
+                return;
+              } else {
+                updateTriageData(prev => ({ ...prev, duration: durationOpt.label }));
+              }
             }
 
             // Only ask duration question if conversationalReply was not already provided!
@@ -2037,8 +2642,8 @@ export default function ChatBox({
               if (source === 'voice' || voiceModeRef.current) {
                 await speakAgent(durationQuestion);
               }
+              updateCurrentStep('duration');
             }
-            updateCurrentStep('duration');
             return;
           }
         }
@@ -2046,14 +2651,14 @@ export default function ChatBox({
         // Duration answer when currently in duration step or indicated by AI
         if ((currentStepRef.current === 'duration' || data.nextStep === 'severity') && durationId) {
           const opt = followUpQuestions?.duration?.options?.find(o => o.id === durationId) || { id: durationId, label: duration || durationId };
-          await handleSelectDuration(opt);
+          await handleSelectDuration(opt, null, true);
           return;
         }
 
         // Severity answer when currently in severity step or indicated by AI
         if ((currentStepRef.current === 'severity' || data.nextStep === 'result') && severityId) {
           const opt = followUpQuestions?.severity?.options?.find(o => o.id === severityId) || { id: severityId, label: severity || severityId };
-          await handleSelectSeverity(opt);
+          await handleSelectSeverity(opt, null, true);
           return;
         }
 
@@ -2443,7 +3048,7 @@ export default function ChatBox({
 
       {interactionMode === 'manual' && (
         <>
-          <div className="chatbox-messages">
+          <div className="chatbox-messages" ref={messagesBoxRef}>
             {messages.map((msg) => (
               <div key={msg.id} className={`chat-message ${msg.sender}`}>
                 {showAvatars && (
@@ -2454,7 +3059,38 @@ export default function ChatBox({
                 <div className="message-content">
                   <p>{msg.text}</p>
                   {msg.isResultCard && (
-                    <DepartmentResult recommendation={msg.recommendation} onReset={initChat} lang={msg.lang || convLangRef.current} />
+                    <>
+                      <DepartmentResult recommendation={msg.recommendation} onReset={initChat} lang={msg.lang || convLangRef.current} />
+                      {showDoctorsInChat && (
+                        <InChatDoctorList
+                          doctors={inChatDoctors}
+                          selectedDoctor={selectedDoctor}
+                          onSelectDoctor={handleSelectDoctor}
+                          onChangeDoctor={handleChangeDoctor}
+                          radius={doctorRadius}
+                          onChangeRadius={handleChangeRadius}
+                          insurance={doctorInsurance}
+                          onChangeInsurance={handleChangeInsurance}
+                          availableInsurances={availableInsurances}
+                          loading={loadingDoctors}
+                          isFallback={isFallbackDoctors}
+                          fallbackMessage={fallbackDoctorMessage}
+                          showInlineBooking={showInlineBooking}
+                          onToggleBooking={() => setShowInlineBooking(prev => !prev)}
+                          assessmentId={savedAssessmentId}
+                          onMoveToUI={() => {
+                            setShowDoctorsInChat(false);
+                            if (onShowDoctorsInUI) onShowDoctorsInUI(true);
+                            addBotMessage('Doctor list moved to the panel below the chat. Scroll down to view all nearby doctors. Type "show in chat" to bring it back here.');
+                          }}
+                        />
+                      )}
+                      {!showDoctorsInChat && (
+                        <div className="chatbox-ui-mode-notice">
+                          📋 Doctor list moved to the panel below the chat. Type <strong>"show in chat"</strong> to bring it back.
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -2471,7 +3107,6 @@ export default function ChatBox({
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Options Tray */}
@@ -2566,6 +3201,59 @@ export default function ChatBox({
                 <QuickChips options={followUpQuestions?.severity?.options || []} onSelect={handleSelectSeverity} />
               </div>
             )}
+
+            {currentStep === 'doctor_selection' && (
+              <div className="step-prompt">
+                <span className="step-label">📍 Distance:</span>
+                <div className="chatbox-radius-chips">
+                  {[5, 10, 15, 25, 50].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      className={`chatbox-radius-chip ${doctorRadius === r ? 'active' : ''}`}
+                      onClick={() => handleChangeRadius(r)}
+                    >
+                      {r} km
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {currentStep === 'doctor_selected' && (
+              <div className="chatbox-selected-prompt-actions">
+                <button
+                  type="button"
+                  className={`chatbox-action-pill book ${showInlineBooking ? 'active' : ''}`}
+                  onClick={() => {
+                    setShowInlineBooking(prev => {
+                      const next = !prev;
+                      if (next) scrollToSelectedDoctor();
+                      return next;
+                    });
+                  }}
+                >
+                  <LuCalendar size={15} />
+                  <span>{showInlineBooking ? 'Close Booking' : 'Book Appointment'}</span>
+                </button>
+                <button
+                  type="button"
+                  className="chatbox-action-pill change"
+                  onClick={handleChangeDoctor}
+                >
+                  <LuRotateCcw size={15} />
+                  <span>Change Doctor</span>
+                </button>
+                <button
+                  type="button"
+                  className="chatbox-action-pill reset"
+                  onClick={initChat}
+                >
+                  <LuRefreshCw size={15} />
+                  <span>Start Over</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {isListening && (
@@ -2582,17 +3270,21 @@ export default function ChatBox({
             <input
               type="text"
               placeholder={
-                currentStep === 'result'
-                  ? (convLangRef.current === 'malayalam' || convLangRef.current === 'malayalam_script'
-                      ? "കൺസൾട്ടേഷൻ പൂർത്തിയായി. വീണ്ടും തുടങ്ങാൻ 'Start Over' ക്ലിക്ക് ചെയ്യുക."
-                      : convLangRef.current === 'manglish'
-                        ? "Consultation kazhinju. Vere chothikkan 'Start Over' click cheyyuka."
-                        : "Consultation complete. Click 'Start Over' to assess another symptom.")
-                  : isListening
-                    ? 'Listening to speech... Speak now'
-                    : currentStep === 'body_area'
-                      ? 'Type or speak: "severe headache since yesterday", "fever"...'
-                      : 'Type, speak, or click an option above...'
+                currentStep === 'doctor_selection'
+                  ? 'Type doctor name, "select 1", "radius 20km", "insurance Star Health"...'
+                  : currentStep === 'doctor_selected'
+                    ? 'Type "book appointment", "change doctor", or "radius 15km"...'
+                    : currentStep === 'result'
+                      ? (convLangRef.current === 'malayalam' || convLangRef.current === 'malayalam_script'
+                          ? "കൺസൾട്ടേഷൻ പൂർത്തിയായി. വീണ്ടും തുടങ്ങാൻ 'Start Over' ക്ലിക്ക് ചെയ്യുക."
+                          : convLangRef.current === 'manglish'
+                            ? "Consultation kazhinju. Vere chothikkan 'Start Over' click cheyyuka."
+                            : "Consultation complete. Click 'Start Over' to assess another symptom.")
+                      : isListening
+                        ? 'Listening to speech... Speak now'
+                        : currentStep === 'body_area'
+                          ? 'Type or speak: "severe headache since yesterday", "fever"...'
+                          : 'Type, speak, or click an option above...'
               }
               value={currentStep === 'result' ? '' : inputText}
               onChange={(e) => setInputText(e.target.value)}
@@ -2644,13 +3336,19 @@ export default function ChatBox({
               {voiceStatus === 'listening' ? "I'm listening..." :
                 voiceStatus === 'thinking' ? 'One moment...' :
                   voiceStatus === 'speaking' ? 'Talk2Doc is speaking...' :
+                    currentStep === 'doctor_selected' ? 'Doctor Selected!' :
+                    currentStep === 'doctor_selection' ? 'Select Your Doctor' :
                     currentStep === 'result' ? 'All done!' : 'Tap the sphere or speak'}
             </p>
             <p className="voice-agent-status-text">
               {voiceTranscript
                 ? `"${voiceTranscript}"`
                 : voiceStatus === 'listening'
-                  ? 'Speak naturally — I understand simple words too!'
+                  ? (currentStep === 'doctor_selection'
+                      ? 'Say "select doctor 1", doctor name, or "radius 20km"'
+                      : currentStep === 'doctor_selected'
+                        ? 'Say "book appointment" or "change doctor"'
+                        : 'Speak naturally — I understand simple words too!')
                   : voiceStatus === 'thinking'
                     ? 'Analyzing what you said...'
                     : voiceStatus === 'speaking'
@@ -2658,9 +3356,26 @@ export default function ChatBox({
                       : 'Tap below or say your symptom anytime.'}
             </p>
 
-            {currentStep === 'result' && recommendation ? (
-              <div className="voice-result-container">
+            {(currentStep === 'result' || currentStep === 'doctor_selection' || currentStep === 'doctor_selected') && recommendation ? (
+              <div className="voice-result-container" style={{ maxHeight: 420, overflowY: 'auto' }}>
                 <DepartmentResult recommendation={recommendation} onReset={initChat} lang={convLangRef.current} />
+                <InChatDoctorList
+                  doctors={inChatDoctors}
+                  selectedDoctor={selectedDoctor}
+                  onSelectDoctor={handleSelectDoctor}
+                  onChangeDoctor={handleChangeDoctor}
+                  radius={doctorRadius}
+                  onChangeRadius={handleChangeRadius}
+                  insurance={doctorInsurance}
+                  onChangeInsurance={handleChangeInsurance}
+                  availableInsurances={availableInsurances}
+                  loading={loadingDoctors}
+                  isFallback={isFallbackDoctors}
+                  fallbackMessage={fallbackDoctorMessage}
+                  showInlineBooking={showInlineBooking}
+                  onToggleBooking={() => setShowInlineBooking(prev => !prev)}
+                  assessmentId={savedAssessmentId}
+                />
               </div>
             ) : (
               <div className="voice-options-panel">

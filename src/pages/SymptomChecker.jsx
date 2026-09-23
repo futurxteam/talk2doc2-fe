@@ -68,13 +68,16 @@ export default function SymptomChecker() {
   const [nearbyGroups, setNearbyGroups] = useState(null);
   const [locatingNearby, setLocatingNearby] = useState(false);
   const [locationStatus, setLocationStatus] = useState('idle'); // 'idle' | 'locating' | 'granted' | 'denied'
-  const [selectedRadius, setSelectedRadius] = useState(50); // km
+  const [selectedRadius, setSelectedRadius] = useState(10); // km (default 10 km)
   const [selectedInsurance, setSelectedInsurance] = useState('all');
   const [insuranceProviders, setInsuranceProviders] = useState([]);
   const [userCoords, setUserCoords] = useState(null); // { lat, lng }
 
   const doctorsSectionRef = useRef(null);
   const token = localStorage.getItem('token');
+
+  // Controls whether the page-level doctor panel is shown (toggled by ChatBox via "show in UI" command)
+  const [showDoctorsInUI, setShowDoctorsInUI] = useState(false);
 
   useEffect(() => {
     // Load body parts data
@@ -436,13 +439,25 @@ export default function SymptomChecker() {
             followUpQuestions={followUpQuestions}
             followUpProfiles={followUpProfiles}
             decisionTrees={decisionTrees}
-            onRecommendation={setCurrentRecommendation}
+            onRecommendation={(rec) => {
+              setCurrentRecommendation(rec);
+              // Reset UI panel visibility each new triage
+              if (!rec) setShowDoctorsInUI(false);
+            }}
+            onShowDoctorsInUI={(show) => {
+              setShowDoctorsInUI(show);
+              if (show) {
+                setTimeout(() => {
+                  doctorsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+              }
+            }}
           />
         </section>
       </main>
 
-      {/* Matching Doctors & Nearby Hospitals Section */}
-      {currentRecommendation && (
+      {/* Matching Doctors & Nearby Hospitals Section — only shown when user says "show in UI" */}
+      {currentRecommendation && showDoctorsInUI && (
         <section className="doctors-triage-section" ref={doctorsSectionRef}>
           <div className="doctors-section-container">
             <div className="doctors-section-header">

@@ -1043,6 +1043,8 @@
   max-height: 740px;
   overflow: hidden;
   position: relative;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 .chatbox-header {
@@ -1141,10 +1143,13 @@
   flex: 1;
   padding: 1.25rem 1.25rem;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 12px;
   background: #f8fafc;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 .chat-message {
@@ -1153,6 +1158,8 @@
   max-width: 88%;
   align-items: flex-end;
   animation: messageFadeIn 0.2s ease-out;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 @keyframes messageFadeIn {
@@ -1162,11 +1169,13 @@
 
 .chat-message.bot {
   align-self: flex-start;
+  text-align: left;
 }
 
 .chat-message.user {
   align-self: flex-end;
   flex-direction: row-reverse;
+  text-align: left;
 }
 
 .message-avatar {
@@ -1194,6 +1203,9 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  text-align: left;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .chat-message.bot .message-content p {
@@ -1206,7 +1218,12 @@
   line-height: 1.45;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   margin: 0;
+  text-align: left !important;
   word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  hyphens: none;
+  box-sizing: border-box;
 }
 
 .chat-message.user .message-content p {
@@ -1218,7 +1235,11 @@
   line-height: 1.45;
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.22);
   margin: 0;
+  text-align: left !important;
   word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  box-sizing: border-box;
 }
 
 /* Typing Bubble */
@@ -1285,9 +1306,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  max-height: 145px;
+  max-height: 155px;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 2px 2px 6px 2px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .quick-chips-container::-webkit-scrollbar {
@@ -1305,8 +1329,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border-radius: 9999px;
+  padding: 8px 14px;
+  border-radius: 14px;
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
   color: #334155;
@@ -1317,7 +1341,13 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
-  white-space: nowrap;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.35;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .quick-chip-btn:hover {
@@ -2268,3 +2298,675 @@
   box-shadow: none;
   transform: none;
 }
+
+/* ========================================================
+   In-Chat Doctor Suggestion & Selection Design System
+   ======================================================== */
+
+/* Notice shown in chat when doctor list is moved to the page UI panel */
+.chatbox-ui-mode-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  border: 1.5px dashed #93c5fd;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: #1e40af;
+  line-height: 1.5;
+}
+.chatbox-ui-mode-notice strong {
+  color: #0284c7;
+  font-weight: 700;
+}
+.chatbox-doctor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.chatbox-filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.chatbox-filter-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chatbox-radius-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chatbox-radius-chip {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chatbox-radius-chip:hover {
+  border-color: #0284c7;
+  color: #0284c7;
+  background: #f0f9ff;
+}
+
+.chatbox-radius-chip.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.chatbox-insurance-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.chatbox-insurance-select {
+  padding: 4px 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  outline: none;
+  cursor: pointer;
+  max-width: 170px;
+}
+
+.chatbox-insurance-select:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.chatbox-show-ui-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border: 1.5px solid #6366f1;
+  background: #eef2ff;
+  color: #4338ca;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  margin-left: auto;
+}
+.chatbox-show-ui-btn:hover {
+  background: #6366f1;
+  color: #fff;
+  border-color: #6366f1;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.chatbox-status-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #64748b;
+  padding: 2px 4px;
+}
+
+.chatbox-doctor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.chatbox-doctor-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chatbox-doctor-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.chatbox-doctor-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.chatbox-doctor-card:hover {
+  border-color: #0284c7;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.1);
+  transform: translateY(-1px);
+}
+
+.chatbox-doctor-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.chatbox-doc-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  border: 1px solid #bae6fd;
+}
+
+.chatbox-doc-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chatbox-doc-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.chatbox-doc-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatbox-doc-specialty {
+  font-size: 0.76rem;
+  color: #0284c7;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.chatbox-doc-hospital {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chatbox-doc-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.chatbox-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.chatbox-badge.distance {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.chatbox-badge.experience {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #dbeafe;
+}
+
+.chatbox-badge.fee {
+  background: #faf5ff;
+  color: #6b21a8;
+  border: 1px solid #f3e8ff;
+}
+
+.chatbox-badge.insurance-tag {
+  background: #fefce8;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chatbox-select-doc-btn {
+  margin-top: 4px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid #0284c7;
+  background: #f0f9ff;
+  color: #0284c7;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.chatbox-select-doc-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+/* Selected Doctor Card */
+.chatbox-selected-doctor-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  border: 2px solid #10b981;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chatbox-selected-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #d1fae5;
+  padding-bottom: 8px;
+}
+
+.chatbox-selected-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #059669;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chatbox-change-doc-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+
+.chatbox-change-doc-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.chatbox-selected-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.chatbox-book-appointment-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #10b981;
+  border: none;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
+  transition: all 0.2s;
+}
+
+.chatbox-book-appointment-btn:hover {
+  background: #059669;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.chatbox-inline-booking-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 10px;
+  margin-top: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+/* Selected Doctor Bottom Tray Action Pills */
+.chatbox-selected-prompt-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.chatbox-action-pill,
+.step-prompt .chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 8px 16px !important;
+  border-radius: 9999px !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  font-family: inherit !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+  border: 1.5px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  margin: 0 !important;
+  text-decoration: none !important;
+}
+
+.chatbox-action-pill:hover,
+.step-prompt .chip:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.chatbox-action-pill.book,
+.step-prompt .chip.selected {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: #ffffff !important;
+  border-color: #059669 !important;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3) !important;
+}
+
+.chatbox-action-pill.book:hover,
+.step-prompt .chip.selected:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  box-shadow: 0 5px 14px rgba(16, 185, 129, 0.45) !important;
+}
+
+.chatbox-action-pill.book.active {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+}
+
+.chatbox-action-pill.change {
+  background: #ffffff !important;
+  color: #0284c7 !important;
+  border-color: #bae6fd !important;
+}
+
+.chatbox-action-pill.change:hover {
+  background: #f0f9ff !important;
+  border-color: #0284c7 !important;
+}
+
+.chatbox-action-pill.reset {
+  background: #ffffff !important;
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
+}
+
+.chatbox-action-pill.reset:hover {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* ========================================================
+   ChatBox Mobile & Tablet Responsive Media Queries
+   ======================================================== */
+
+@media (max-width: 900px) {
+  .chatbox-card {
+    min-height: 520px;
+    max-height: none;
+    border-radius: 20px;
+  }
+
+  .chatbox-messages {
+    max-height: 58vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .chatbox-card {
+    border-radius: 16px;
+    min-height: 480px;
+    max-height: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .chatbox-header {
+    padding: 0.75rem 0.85rem;
+    gap: 8px;
+  }
+
+  .chatbox-header-title {
+    gap: 8px;
+  }
+
+  .bot-avatar-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  .chatbox-header-title h3 {
+    font-size: 0.95rem;
+  }
+
+  .avatar-toggle-pill {
+    padding: 4px 8px;
+    font-size: 0.68rem;
+  }
+
+  .interaction-switch {
+    display: flex;
+    width: 100%;
+  }
+
+  .interaction-option {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .interaction-option .interaction-icon {
+    font-size: 1.15rem;
+  }
+
+  .interaction-option div strong {
+    font-size: 0.78rem;
+  }
+
+  .interaction-option div span {
+    font-size: 0.66rem;
+  }
+
+  .chatbox-messages {
+    padding: 0.85rem 0.75rem;
+    gap: 10px;
+    max-height: 52vh;
+  }
+
+  .chat-message {
+    max-width: 94%;
+    gap: 6px;
+  }
+
+  .chat-message.bot .message-content p,
+  .chat-message.user .message-content p {
+    font-size: 0.84rem;
+    padding: 9px 12px;
+    line-height: 1.42;
+    border-radius: 14px 14px 14px 3px;
+  }
+
+  .chat-message.user .message-content p {
+    border-radius: 14px 14px 3px 14px;
+  }
+
+  .chatbox-chips-tray {
+    padding: 0.65rem 0.75rem 0.5rem 0.75rem;
+  }
+
+  .quick-chips-container {
+    max-height: 175px;
+    gap: 6px;
+    flex-direction: column;
+  }
+
+  .quick-chip-btn {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 0.8rem;
+  }
+
+  .chatbox-input-form {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .chatbox-input-form input {
+    font-size: 0.82rem;
+    padding: 9px 12px;
+  }
+
+  .chatbox-filter-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .chatbox-radius-chips {
+    justify-content: space-between;
+  }
+
+  .chatbox-radius-chip {
+    flex: 1;
+    text-align: center;
+    padding: 5px 8px;
+    font-size: 0.72rem;
+  }
+
+  .chatbox-insurance-selector {
+    width: 100%;
+  }
+
+  .chatbox-insurance-select {
+    width: 100%;
+  }
+
+  .chatbox-show-ui-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 7px 12px;
+  }
+
+  .chatbox-doctor-card {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .chatbox-card {
+    border-radius: 12px;
+  }
+
+  .chatbox-messages {
+    padding: 0.65rem 0.5rem;
+  }
+
+  .chat-message {
+    max-width: 96%;
+  }
+
+  .chat-message.bot .message-content p,
+  .chat-message.user .message-content p {
+    font-size: 0.82rem;
+    padding: 8px 10px;
+  }
+
+  .interaction-option div span {
+    display: none;
+  }
+
+  .interaction-option {
+    justify-content: center;
+    padding: 8px 6px;
+  }
+}
+
+

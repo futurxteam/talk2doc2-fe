@@ -686,99 +686,16 @@
   margin: 0;
 }
 
-/* Custom restyling of embedded BookAppointmentWidget */
-.doctor-booking-drawer > div {
+/* Embedded BookAppointmentWidget styling in Drawer */
+.doctor-booking-drawer .book-appointment-widget {
   border: none !important;
   padding: 0 !important;
   background: transparent !important;
+  box-shadow: none !important;
 }
 
-.doctor-booking-drawer h4 {
-  display: none; /* Hide internal widget title */
-}
-
-.doctor-booking-drawer label {
-  display: block;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #475569;
-  letter-spacing: 0.04em;
-  margin-bottom: 6px;
-}
-
-.doctor-booking-drawer input[type="date"] {
-  width: 65%;
-  padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  background: #ffffff;
-  color: #0f172a;
-  outline: none;
-  font-family: inherit;
-}
-
-.doctor-booking-drawer input[type="date"]:focus {
-  border-color: #0284c7;
-  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
-}
-
-.doctor-booking-drawer button:not(.book-doctor-toggle-btn) {
-  font-family: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-/* The Load Slots button */
-.doctor-booking-drawer input[type="date"] + button {
-  padding: 8px 14px;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  color: #1e293b;
-  font-size: 0.82rem;
-  margin-left: 8px;
-}
-
-.doctor-booking-drawer input[type="date"] + button:hover {
-  background: #e2e8f0;
-}
-
-.doctor-booking-drawer select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  background: #ffffff;
-  color: #0f172a;
-  outline: none;
-  margin-top: 4px;
-}
-
-/* Confirm Appointment button */
-.doctor-booking-drawer button:last-child {
-  width: 100%;
-  padding: 10px;
-  background: #059669 !important;
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 8px !important;
-  font-size: 0.88rem !important;
-  font-weight: 700 !important;
-  margin-top: 14px !important;
-  cursor: pointer;
-}
-
-.doctor-booking-drawer button:last-child:hover:not(:disabled) {
-  background: #047857 !important;
-}
-
-.doctor-booking-drawer button:last-child:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.doctor-booking-drawer .baw-header {
+  display: none; /* Drawer already has its own header */
 }
 
 /* No Doctors State */
