@@ -1651,7 +1651,7 @@ export default function ChatBox({
         await speakAgent(nextNode.question);
       }
 
-      setCurrentStep('tree_node');
+      updateCurrentStep('tree_node');
     }, 400);
   };
 
@@ -1701,7 +1701,7 @@ export default function ChatBox({
 
   // Final API calls
   const submitTriage = async (bodyArea, symptomId, treeId, answersMap) => {
-    setCurrentStep('loading');
+    updateCurrentStep('loading');
     setIsTyping(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/triage`, {
@@ -2560,6 +2560,14 @@ export default function ChatBox({
             }
           }
 
+          if (!foundSymptom) {
+            targetAreaKey = targetAreaKey || 'general';
+            foundSymptom = {
+              id: symptomId,
+              label: symptomName || symptomId
+            };
+          }
+
           if (foundSymptom) {
             updateTriageData(prev => ({
               ...prev,
@@ -2629,6 +2637,23 @@ export default function ChatBox({
                 return;
               } else {
                 updateTriageData(prev => ({ ...prev, duration: durationOpt.label }));
+                const resolved = resolveFollowUpProfile(foundSymptom.id, foundSymptom.label);
+                if (resolved?.profile?.questions?.length > 0) {
+                  updateTriageData(prev => ({
+                    ...prev,
+                    profileId: resolved.profileId,
+                    profileQuestionIndex: 0,
+                    profileAnswers: {}
+                  }));
+                  updateCurrentStep('profile_question');
+                  return;
+                }
+                if (resolved?.profile && resolved.profile.requiresSeverity === false) {
+                  await handleSelectSeverity({ id: 'N/A', label: 'Not applicable' }, null, true);
+                  return;
+                }
+                updateCurrentStep('severity');
+                return;
               }
             }
 
@@ -2642,8 +2667,8 @@ export default function ChatBox({
               if (source === 'voice' || voiceModeRef.current) {
                 await speakAgent(durationQuestion);
               }
-              updateCurrentStep('duration');
             }
+            updateCurrentStep('duration');
             return;
           }
         }
@@ -2814,9 +2839,7 @@ export default function ChatBox({
             );
           }
 
-          setCurrentStep(
-            'tree_node'
-          );
+          updateCurrentStep('tree_node');
 
           return;
         }
@@ -2844,9 +2867,7 @@ export default function ChatBox({
         );
       }
 
-      setCurrentStep(
-        'duration'
-      );
+      updateCurrentStep('duration');
 
       return;
     }
