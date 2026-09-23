@@ -617,6 +617,7 @@ export default function ChatBox({
 
     setVoiceTranscript('');
     voiceTranscriptRef.current = '';
+    convLangRef.current = 'english';
 
     setUnderstoodData({
       bodyArea: null,
@@ -1024,9 +1025,9 @@ export default function ChatBox({
       const lang = convLangRef.current;
       let severityQuestion;
       if (lang === 'manglish') {
-        severityQuestion = 'Vedana engane und — cheruthano, nallath aano, atho sahikkan pattatha bayankara vedana aano?';
+        severityQuestion = 'Vedana engane und — cheruthano, idatharam aano, atho sahikkan pattatha bayankara vedana aano?';
       } else if (lang === 'malayalam_script') {
-        severityQuestion = 'വേദന എഷ്ടുണ്ട് — ചെറുതാണോ, കൂടുതലാണോ, അതോ ഭയങ്കരമായോ?';
+        severityQuestion = 'വേദന എങ്ങനെയുണ്ട് — ചെറുതാണോ, ഇടത്തരം ആണോ, അതോ സഹിക്കാൻ പറ്റാത്ത അതികഠിനമായ വേദനയാണോ?';
       } else {
         severityQuestion = followUpQuestions?.severity?.question || 'How severe is the discomfort?';
       }
@@ -1286,9 +1287,7 @@ export default function ChatBox({
     // Update detected conversation language (skip very short inputs like "inn" that won't detect reliably)
     if (query.length > 3) {
       const detectedLang = detectFrontendLanguage(query);
-      if (detectedLang !== 'english') {
-        convLangRef.current = detectedLang; // Stick to Manglish/Malayalam once detected
-      }
+      convLangRef.current = detectedLang;
     }
 
     console.log(
