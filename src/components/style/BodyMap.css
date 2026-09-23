@@ -5,6 +5,11 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .bodymap-svg {
@@ -13,6 +18,19 @@
   max-height: 520px;
   cursor: pointer;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.bodymap-hitbox {
+  fill: transparent;
+  pointer-events: all;
+  cursor: pointer;
 }
 
 /* Default Body SVG Paths */

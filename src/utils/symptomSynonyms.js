@@ -690,17 +690,23 @@ export function detectFrontendLanguage(text) {
   if (!text || typeof text !== 'string') return 'english';
   if (/[\u0D00-\u0D7F]/.test(text)) return 'malayalam_script';
   const manglishSignals = [
-    'enikku', 'eniku', 'vedana', 'vedanikkunnu', 'pallu', 'thala', 'thalavedana',
-    'vayaru', 'vayar', 'vayattil', 'kazhuthu', 'nenju', 'nenjil', 'chardi',
+    'enikku', 'eniku', 'enik', 'vedana', 'vedanikkunnu', 'pallu', 'thala', 'thalavedana',
+    'vayaru', 'vayar', 'vayattil', 'kazhuthu', 'nenju', 'nenjil', 'chardi', 'chuma',
     'pani', 'sheenam', 'ksheenam', 'tharippu', 'veekkam', 'chori', 'chorichil',
     'moothram', 'innu', 'inn', 'innumuthal', 'innale', 'ravile', 'ippol',
     'kurachu', 'kure', 'neram', 'neramayi', 'divasam', 'divasamayi',
-    'bayankara', 'bhayankara', 'cheriya', 'und', 'undu', 'illa', 'vannu',
-    'kayyu', 'kaalu', 'sahikkan', 'muthal', 'koluthipidutham', 'koluthal',
-    'chora', 'kazhikkan', 'urakkam', 'maravippu', 'ayyo', 'ayyoo', 'kashtam',
-    'thudangi', 'thudangiyittu', 'vedanayo', 'cheruthaano', 'budhimuttu'
+    'bayankara', 'bhayankara', 'cheriya', 'und', 'undu', 'undo', 'ind', 'indo',
+    'illa', 'illanne', 'onnumilla', 'onnumillaa', 'vannu', 'poyi', 'aayi', 'aayo', 'aayilla',
+    'kayyu', 'kaalu', 'potti', 'odivu', 'aano', 'aanu', 'alla', 'allayo', 'allaayo',
+    'kooduthal', 'kooduthalaano', 'sahikkan', 'muthal', 'koluthipidutham', 'koluthal',
+    'chora', 'raktham', 'kazhikkan', 'urakkam', 'maravippu', 'ayyo', 'ayyoo', 'kashtam',
+    'prashnam', 'prashnangal', 'sambandhichu', 'sambandhicha', 'thudangi', 'thudangiyittu',
+    'vedanayo', 'cheruthaano', 'cheruthano', 'budhimuttu', 'budhimuttundalle', 'ethra',
+    'engane', 'ithu', 'thavana', 'thavano', 'thavanaayi', 'pravashyam', 'pravisham', 'vatam'
   ];
-  const words = text.toLowerCase().split(/[^a-zA-Z]+/);
+  const lower = text.toLowerCase();
+  if (/\b\d+\s*(thavana|pravashyam|vatam)\b/i.test(lower)) return 'manglish';
+  const words = lower.split(/[^a-zA-Z]+/);
   if (words.some(w => manglishSignals.includes(w))) return 'manglish';
   return 'english';
 }

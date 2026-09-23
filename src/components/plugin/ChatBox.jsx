@@ -17,6 +17,7 @@ import {
 } from 'react-icons/lu';
 import QuickChips from './QuickChips';
 import DepartmentResult from './DepartmentResult';
+import { saveAssessmentResult } from '../../api/usersApi';
 import { matchFreeTextQuery, matchDurationQuery, matchSeverityQuery, isNegativeResponse, extractFullTriageIntent, loadSynonymsFromApi, detectFrontendLanguage } from '../../utils/symptomSynonyms';
 
 export default function ChatBox({
@@ -25,6 +26,7 @@ export default function ChatBox({
   bodyPartsData,
   followUpQuestions,
   decisionTrees,
+  followUpProfiles = {},
   onRecommendation
 }) {
   const [messages, setMessages] = useState([]);
@@ -71,7 +73,11 @@ export default function ChatBox({
     currentNodeId: null,
     currentNode: null,
     answersMap: {},     // { nodeId: answer(s) }
-    pendingMultiSelect: []  // accumulates multi-select answers before confirm
+    pendingMultiSelect: [],  // accumulates multi-select answers before confirm
+    // Clinical follow-up profile state
+    profileId: null,
+    profileQuestionIndex: 0,
+    profileAnswers: {}
   });
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -101,6 +107,69 @@ export default function ChatBox({
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+
+  const hasSavedTriageRef = useRef(false);
+
+  const persistTriageReport = async (rec, currentData) => {
+    if (!rec) return;
+    const token = localStorage.getItem("token");
+    const symptomName = rec.primarySymptom || rec.symptomName || currentData?.symptomName || "Clinical Evaluation";
+    const bodyArea = rec.bodyAreaName || rec.bodyArea || currentData?.bodyArea || "";
+    const department = rec.department || "General Medicine";
+    const altDepartment = rec.altDepartment || rec.alternativeDepartment || "Primary Care / Internal Medicine";
+    const urgency = rec.urgencyLevel || rec.urgency || (rec.emergency ? "EMERGENCY" : "ROUTINE");
+
+    const payload = {
+      emergency: !!rec.emergency,
+      emergencyReason: rec.emergencyNotice || rec.reason || "",
+      recommendation: `${department} (${urgency})`,
+      department,
+      alternativeDepartment: altDepartment,
+      urgencyLevel: urgency,
+      primarySymptom: symptomName,
+      bodyArea,
+      duration: rec.duration || currentData?.duration || "",
+      severity: rec.severity || currentData?.severity || "",
+      results: [
+        {
+          name: symptomName,
+          department,
+          alternativeDepartment: altDepartment,
+          urgency,
+          score: rec.triageScore || 100,
+          advice: rec.advice || rec.patientAdvice || ""
+        }
+      ],
+      collected: {
+        bodyArea,
+        primarySymptom: symptomName,
+        duration: rec.duration || currentData?.duration,
+        severity: rec.severity || currentData?.severity,
+        followUpAnswers: currentData?.followUpAnswers || currentData?.profileAnswers || {},
+        clinicalSummary: rec.clinicalSummary || rec.reason,
+        advice: rec.advice || rec.patientAdvice,
+        matchedKeywords: rec.matchedKeywords || []
+      },
+      reportType: "TRIAGE_EVALUATION",
+      reportData: rec,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem("talk2doc_latest_triage_report", JSON.stringify(payload));
+    } catch (e) {
+      console.warn("Could not save report to localStorage", e);
+    }
+
+    if (token) {
+      try {
+        await saveAssessmentResult(payload);
+        console.log("✅ Triage report persisted to patient account");
+      } catch (err) {
+        console.error("Failed to save triage report to patient account:", err);
+      }
+    }
+  };
 
   useEffect(() => {
     loadSynonymsFromApi(API_BASE_URL);
@@ -430,6 +499,9 @@ export default function ChatBox({
   };
 
   const processVoiceInput = async (text) => {
+    if (currentStepRef.current === 'result' || currentStep === 'result') {
+      return;
+    }
     if (!text?.trim()) {
       if (voiceModeRef.current && !isRecognizingRef.current) {
         startAgentListening();
@@ -580,7 +652,11 @@ export default function ChatBox({
     if (onRecommendation) {
       onRecommendation(recommendation);
     }
-  }, [recommendation]);
+    if (recommendation && currentStep === 'result' && !hasSavedTriageRef.current) {
+      hasSavedTriageRef.current = true;
+      persistTriageReport(recommendation, triageDataRef.current || triageData);
+    }
+  }, [recommendation, currentStep]);
 
   useEffect(() => {
     if (messages.length === 0) {
@@ -594,6 +670,7 @@ export default function ChatBox({
       selectedBodyPart &&
       currentStep === 'body_area' &&
       selectedBodyPart !== triageData.bodyArea &&
+      selectedBodyPart !== triageDataRef.current.bodyArea &&
       !selectingAreaRef.current
     ) {
       handleSelectBodyArea(selectedBodyPart, true);
@@ -601,6 +678,7 @@ export default function ChatBox({
   }, [selectedBodyPart]);
 
   const initChat = () => {
+    hasSavedTriageRef.current = false;
     voiceModeRef.current = false;
     voiceProcessingRef.current = false;
 
@@ -653,7 +731,10 @@ export default function ChatBox({
       currentNodeId: null,
       currentNode: null,
       answersMap: {},
-      pendingMultiSelect: []
+      pendingMultiSelect: [],
+      profileId: null,
+      profileQuestionIndex: 0,
+      profileAnswers: {}
     };
 
     updateTriageData(initialTriage);
@@ -692,6 +773,69 @@ export default function ChatBox({
     setMessages(prev => [...prev, newMsg]);
   };
 
+  const resolveFollowUpProfile = (symptomId, symptomName = '') => {
+    if (!symptomId && !symptomName) return null;
+    const sId = (symptomId || '').toLowerCase();
+    const sName = (symptomName || '').toLowerCase();
+    if (followUpProfiles[sId]) return { profileId: sId, profile: followUpProfiles[sId] };
+    if (sId.includes('diarrhea') || sId.includes('loose_motion') || sName.includes('loose') || sName.includes('diarrhea')) {
+      if (followUpProfiles.diarrhea) return { profileId: 'diarrhea', profile: followUpProfiles.diarrhea };
+    }
+    if (sId.includes('tinnitus') || sName.includes('ringing') || sName.includes('tinnitus') || (sName.includes('ear') && (sName.includes('buzz') || sName.includes('ring')))) {
+      if (followUpProfiles.tinnitus) return { profileId: 'tinnitus', profile: followUpProfiles.tinnitus };
+    }
+    if (sId.includes('urinary_urgency') || sId.includes('urinary_frequency') || (sName.includes('frequent') && sName.includes('urin'))) {
+      if (followUpProfiles.urinary_frequency) return { profileId: 'urinary_frequency', profile: followUpProfiles.urinary_frequency };
+    }
+    if (sId.includes('burning_urination') || (sName.includes('burning') && sName.includes('urin')) || (sName.includes('pain') && sName.includes('urin'))) {
+      if (followUpProfiles.burning_urination) return { profileId: 'burning_urination', profile: followUpProfiles.burning_urination };
+    }
+    if (sId.includes('jaundice') || sName.includes('jaundice') || sName.includes('yellow')) {
+      if (followUpProfiles.jaundice) return { profileId: 'jaundice', profile: followUpProfiles.jaundice };
+    }
+    if (sId.includes('tooth') || sId.includes('dental') || sName.includes('tooth') || sName.includes('dental')) {
+      if (followUpProfiles.toothache) return { profileId: 'toothache', profile: followUpProfiles.toothache };
+    }
+    if (sId.includes('fever') || sName.includes('fever') || sName.includes('temperature')) {
+      if (followUpProfiles.fever) return { profileId: 'fever', profile: followUpProfiles.fever };
+    }
+    if (sId.includes('constipation') || sName.includes('constipat')) {
+      if (followUpProfiles.constipation) return { profileId: 'constipation', profile: followUpProfiles.constipation };
+    }
+    if (sId.includes('chest_pain') || sName.includes('chest pain') || sName.includes('pressure')) {
+      if (followUpProfiles.chest_pain) return { profileId: 'chest_pain', profile: followUpProfiles.chest_pain };
+    }
+    if (sId.includes('skin_rash') || sId.includes('hives') || sName.includes('rash') || sName.includes('itching')) {
+      if (followUpProfiles.skin_rash) return { profileId: 'skin_rash', profile: followUpProfiles.skin_rash };
+    }
+    if (sId.includes('cough') || sName.includes('cough')) {
+      if (followUpProfiles.persistent_cough) return { profileId: 'persistent_cough', profile: followUpProfiles.persistent_cough };
+    }
+    for (const [pKey, pVal] of Object.entries(followUpProfiles || {})) {
+      if (sId === pKey || sName.includes(pKey)) return { profileId: pKey, profile: pVal };
+    }
+    return null;
+  };
+
+  const askProfileQuestion = (profile, qIndex) => {
+    const questionObj = profile?.questions?.[qIndex];
+    if (!questionObj) return;
+
+    const lang = convLangRef.current;
+    let questionText = questionObj.question;
+    if (lang === 'manglish' && questionObj.manglish) {
+      questionText = questionObj.manglish;
+    } else if (lang === 'malayalam_script' && questionObj.malayalam) {
+      questionText = questionObj.malayalam;
+    }
+
+    addBotMessage(questionText, {}, { speakMessage: false });
+    if (voiceModeRef.current) {
+      speakAgent(questionObj.question);
+    }
+    updateCurrentStep('profile_question');
+  };
+
   // Direct 1-tap route to General Medicine if input is messy or user is unsure
   const handleDirectGeneralMedicine = () => {
     addUserMessage('Recommend General Medicine consultation');
@@ -722,7 +866,7 @@ export default function ChatBox({
   };
 
   // When user picks a body area
-  const handleSelectBodyArea = (partId, fromSvg = false) => {
+  const handleSelectBodyArea = (partId, fromSvg = false, skipUserMsg = false, skipBotMsg = false) => {
     selectingAreaRef.current = true;
     const displayName = bodyPartsData?.[partId]?.displayName || partId;
 
@@ -731,12 +875,30 @@ export default function ChatBox({
     }
 
     updateTriageData(prev => ({ ...prev, bodyArea: partId }));
-    addUserMessage(`Discomfort in: ${displayName}`);
+    if (!skipUserMsg) {
+      addUserMessage(`Discomfort in: ${displayName}`);
+    }
+
+    if (skipBotMsg) {
+      updateCurrentStep('symptom');
+      selectingAreaRef.current = false;
+      return;
+    }
+
     setIsTyping(true);
 
     setTimeout(() => {
       setIsTyping(false);
-      addBotMessage(`Got it. What specific type of symptom or problem are you experiencing in your ${displayName}?`);
+      const lang = convLangRef.current;
+      let bodyAreaQuestion;
+      if (lang === 'manglish') {
+        bodyAreaQuestion = `Manasilayi. ${displayName} sambandhichu enthanu budhimuttu ennu parayamo?`;
+      } else if (lang === 'malayalam_script') {
+        bodyAreaQuestion = `മനസ്സിലായി. ${displayName} ഭാഗത്ത് എന്താണ് ബുദ്ധിമുട്ട് എന്ന് പറയാമോ?`;
+      } else {
+        bodyAreaQuestion = `Got it. What specific type of symptom or problem are you experiencing in your ${displayName}?`;
+      }
+      addBotMessage(bodyAreaQuestion);
       updateCurrentStep('symptom');
       selectingAreaRef.current = false;
     }, 350);
@@ -771,8 +933,30 @@ export default function ChatBox({
         }
       }
 
-      // No tree - proceed to duration step
-      addBotMessage(followUpQuestions?.duration?.question || 'How long have you been experiencing this problem?');
+      // Check if this symptom has a clinical follow-up profile that does NOT require duration
+      const resolvedProfile = resolveFollowUpProfile(symptom.id, symptom.label);
+      if (resolvedProfile?.profile?.requiresDuration === false && resolvedProfile.profile.questions?.length > 0) {
+        updateTriageData(prev => ({
+          ...prev,
+          profileId: resolvedProfile.profileId,
+          profileQuestionIndex: 0,
+          profileAnswers: {}
+        }));
+        askProfileQuestion(resolvedProfile.profile, 0);
+        return;
+      }
+
+      // No tree (or requires duration) - proceed to duration step
+      const lang = convLangRef.current;
+      let durationQuestion;
+      if (lang === 'manglish') {
+        durationQuestion = 'Ithu thudangiyittu ethra naalayi / ethra samayamayi?';
+      } else if (lang === 'malayalam_script') {
+        durationQuestion = 'ഇത് തുടങ്ങിയിട്ട് എത്ര സമയമായി / എത്ര നാളായി?';
+      } else {
+        durationQuestion = followUpQuestions?.duration?.question || 'How long have you been experiencing this problem?';
+      }
+      addBotMessage(durationQuestion);
       updateCurrentStep('duration');
     }, 350);
   };
@@ -1010,10 +1194,11 @@ export default function ChatBox({
   // skipUserMsg: true when processUserInput already added the user bubble (avoids duplicate)
   const handleSelectDuration = (durationOpt, userTyped = null, skipUserMsg = false) => {
     return new Promise((resolve) => {
-      updateTriageData(prev => ({
-        ...prev,
+      const updatedTriage = {
+        ...triageDataRef.current,
         duration: durationOpt.label
-      }));
+      };
+      updateTriageData(updatedTriage);
 
       // Only add user bubble if not already added by processUserInput
       if (!skipUserMsg) {
@@ -1021,22 +1206,43 @@ export default function ChatBox({
       }
       setIsTyping(true);
 
-      // Chat bubble: show in conversation language (Manglish/Malayalam/English)
-      const lang = convLangRef.current;
-      let severityQuestion;
-      if (lang === 'manglish') {
-        severityQuestion = 'Vedana engane und — cheruthano, idatharam aano, atho sahikkan pattatha bayankara vedana aano?';
-      } else if (lang === 'malayalam_script') {
-        severityQuestion = 'വേദന എങ്ങനെയുണ്ട് — ചെറുതാണോ, ഇടത്തരം ആണോ, അതോ സഹിക്കാൻ പറ്റാത്ത അതികഠിനമായ വേദനയാണോ?';
-      } else {
-        severityQuestion = followUpQuestions?.severity?.question || 'How severe is the discomfort?';
-      }
-
-      // TTS: always English — browser TTS cannot read Manglish or Malayalam script
-      const severityQuestionTTS = followUpQuestions?.severity?.question || 'How severe is the discomfort?';
-
       setTimeout(async () => {
         setIsTyping(false);
+
+        // Check if this symptom has a clinical follow-up profile
+        const resolved = resolveFollowUpProfile(updatedTriage.symptomId, updatedTriage.symptomName);
+        if (resolved?.profile?.questions?.length > 0) {
+          updateTriageData(prev => ({
+            ...prev,
+            profileId: resolved.profileId,
+            profileQuestionIndex: 0,
+            profileAnswers: {}
+          }));
+          askProfileQuestion(resolved.profile, 0);
+          resolve();
+          return;
+        }
+
+        if (resolved?.profile && resolved.profile.requiresSeverity === false) {
+          // Direct recommendation without generic severity
+          await handleSelectSeverity({ id: 'N/A', label: 'Not applicable' }, null, true);
+          resolve();
+          return;
+        }
+
+        // Chat bubble: show in conversation language (Manglish/Malayalam/English)
+        const lang = convLangRef.current;
+        let severityQuestion;
+        if (lang === 'manglish') {
+          severityQuestion = 'Vedana engane und — cheruthano, idatharam aano, atho sahikkan pattatha bayankara vedana aano?';
+        } else if (lang === 'malayalam_script') {
+          severityQuestion = 'വേദന എങ്ങനെയുണ്ട് — ചെറുതാണോ, ഇടത്തരം ആണോ, അതോ സഹിക്കാൻ പറ്റാത്ത അതികഠിനമായ വേദനയാണോ?';
+        } else {
+          severityQuestion = followUpQuestions?.severity?.question || 'How severe is the discomfort?';
+        }
+
+        // TTS: always English — browser TTS cannot read Manglish or Malayalam script
+        const severityQuestionTTS = followUpQuestions?.severity?.question || 'How severe is the discomfort?';
 
         addBotMessage(severityQuestion, {}, { speakMessage: false });
 
@@ -1065,7 +1271,8 @@ export default function ChatBox({
           bodyArea: updatedData.bodyArea,
           symptomId: updatedData.symptomId,
           duration: updatedData.duration,
-          severity: severityOpt.id
+          severity: severityOpt.id,
+          profileAnswers: updatedData.profileAnswers || {}
         })
       });
       const data = await res.json();
@@ -1077,12 +1284,23 @@ export default function ChatBox({
         setRecommendation(data.recommendation);
         updateCurrentStep('result');
 
+        const lang = convLangRef.current;
+        let resultHeading;
+        if (lang === 'manglish') {
+          resultHeading = `${data.recommendation.bodyAreaName || 'Ee bhaagathe'} sambandhichu ningalude lakshanangal vechu, ningal kaanenda specialty department ithaanu:`;
+        } else if (lang === 'malayalam_script') {
+          resultHeading = `${data.recommendation.bodyAreaName || ''} ഭാഗത്തെ നിങ്ങളുടെ ലക്ഷണങ്ങൾ വിലയിരുത്തി, നിങ്ങൾ കാണേണ്ട വിഭാഗം ഇതാ താഴെ നൽകുന്നു:`;
+        } else {
+          resultHeading = `Based on your symptoms in ${data.recommendation.bodyAreaName}, here is your recommended specialty department for consultation:`;
+        }
+
         const newMsg = {
           id: Date.now(),
           sender: 'bot',
-          text: `Based on your symptoms in ${data.recommendation.bodyAreaName}, here is your recommended specialty department for consultation:`,
+          text: resultHeading,
           isResultCard: true,
-          recommendation: data.recommendation
+          recommendation: data.recommendation,
+          lang: convLangRef.current
         };
         messagesRef.current = [...messagesRef.current, newMsg];
         setMessages(prev => [...prev, newMsg]);
@@ -1111,12 +1329,22 @@ export default function ChatBox({
       };
       setRecommendation(fallbackRec);
       updateCurrentStep('result');
+      const lang = convLangRef.current;
+      let fallbackHeading;
+      if (lang === 'manglish') {
+        fallbackHeading = 'Ningalude lakshanangal vechu, ningal kaanenda specialty department ithaanu:';
+      } else if (lang === 'malayalam_script') {
+        fallbackHeading = 'നിങ്ങളുടെ ലക്ഷണങ്ങൾ വിലയിരുത്തി, നിങ്ങൾ കാണേണ്ട വിഭാഗം താഴെ നൽകുന്നു:';
+      } else {
+        fallbackHeading = 'Based on your symptoms, here is your recommended specialty department for consultation:';
+      }
       const newMsg = {
         id: Date.now(),
         sender: 'bot',
-        text: 'Based on your symptoms, here is your recommended specialty department for consultation:',
+        text: fallbackHeading,
         isResultCard: true,
-        recommendation: fallbackRec
+        recommendation: fallbackRec,
+        lang: convLangRef.current
       };
       messagesRef.current = [...messagesRef.current, newMsg];
       setMessages(prev => [...prev, newMsg]);
@@ -1124,6 +1352,72 @@ export default function ChatBox({
         finishVoiceConsultation();
       }
     }
+  };
+
+  const handleSelectProfileOption = async (option, questionObj, userTyped = null, skipUserMsg = false) => {
+    const curProfileId = triageDataRef.current.profileId;
+    const curAnswers = { ...(triageDataRef.current.profileAnswers || {}), [questionObj.id]: option.id };
+
+    const isRedFlag = Boolean(option.redFlag || option.urgency === 'EMERGENCY');
+
+    const updatedData = {
+      ...triageDataRef.current,
+      profileAnswers: curAnswers,
+      isEmergency: isRedFlag || triageDataRef.current.isEmergency
+    };
+    updateTriageData(updatedData);
+
+    const lang = convLangRef.current;
+    const displayLabel = (lang === 'manglish' && option.manglish)
+      ? option.manglish
+      : (lang === 'malayalam_script' && option.malayalam)
+        ? option.malayalam
+        : (option.label || option.id);
+
+    if (!skipUserMsg) {
+      addUserMessage(userTyped || displayLabel);
+    }
+    setIsTyping(true);
+
+    const profile = followUpProfiles?.[curProfileId];
+    const nextQIndex = (triageDataRef.current.profileQuestionIndex || 0) + 1;
+
+    setTimeout(async () => {
+      setIsTyping(false);
+
+      if (profile && profile.questions && nextQIndex < profile.questions.length) {
+        updateTriageData(prev => ({
+          ...prev,
+          profileQuestionIndex: nextQIndex,
+          profileAnswers: curAnswers
+        }));
+        askProfileQuestion(profile, nextQIndex);
+      } else {
+        if (profile?.requiresSeverity) {
+          const sLang = convLangRef.current;
+          let severityQuestion;
+          if (sLang === 'manglish') {
+            severityQuestion = 'Vedana engane und — cheruthano, idatharam aano, atho sahikkan pattatha bayankara vedana aano?';
+          } else if (sLang === 'malayalam_script') {
+            severityQuestion = 'വേദന എങ്ങനെയുണ്ട് — ചെറുതാണോ, ഇടത്തരം ആണോ, അതോ സഹിക്കാൻ പറ്റാത്ത അതികഠിനമായ വേദനയാണോ?';
+          } else {
+            severityQuestion = followUpQuestions?.severity?.question || 'How severe is the discomfort?';
+          }
+          addBotMessage(severityQuestion, {}, { speakMessage: false });
+          if (voiceModeRef.current) {
+            await speakAgent(severityQuestion);
+          }
+          updateCurrentStep('severity');
+        } else {
+          // Direct recommendation
+          await handleSelectSeverity(
+            { id: isRedFlag ? 'severe' : 'N/A', label: isRedFlag ? 'Severe' : 'N/A' },
+            null,
+            true
+          );
+        }
+      }
+    }, 350);
   };
   const handleVoiceMultiSelect = (
     selectedOptionIds,
@@ -1284,10 +1578,22 @@ export default function ChatBox({
 
     const query = rawQuery.trim();
 
-    // Update detected conversation language (skip very short inputs like "inn" that won't detect reliably)
-    if (query.length > 3) {
-      const detectedLang = detectFrontendLanguage(query);
+    // Update detected conversation language (maintain language stickiness for Malayalam & Manglish)
+    const detectedLang = detectFrontendLanguage(query);
+    if (detectedLang === 'malayalam_script' || detectedLang === 'manglish') {
       convLangRef.current = detectedLang;
+    } else {
+      // If currently in Manglish or Malayalam, only revert to English if user explicitly asked for English
+      const qLower = query.toLowerCase();
+      if (
+        qLower.includes('in english') ||
+        qLower.includes('speak english') ||
+        qLower.includes('switch to english') ||
+        qLower.includes('talk in english')
+      ) {
+        convLangRef.current = 'english';
+      }
+      // Otherwise preserve convLangRef.current!
     }
 
     console.log(
@@ -1367,6 +1673,77 @@ export default function ChatBox({
         { speakMessage: false }
       );
       return;
+    }
+
+    // ==========================================
+    // 1.5. CLINICAL PROFILE QUESTION
+    // ==========================================
+    if (stepNow === 'profile_question') {
+      const profile = followUpProfiles?.[triageNow.profileId];
+      const qIndex = triageNow.profileQuestionIndex || 0;
+      const currQ = profile?.questions?.[qIndex];
+      if (currQ) {
+        const qLower = query.toLowerCase();
+        const matchedOpt = currQ.options?.find(o =>
+          (o.label && qLower.includes(o.label.toLowerCase())) ||
+          (o.manglish && qLower.includes(o.manglish.toLowerCase())) ||
+          (o.malayalam && qLower.includes(o.malayalam.toLowerCase())) ||
+          (o.id && qLower.includes(o.id.toLowerCase()))
+        );
+        if (matchedOpt) {
+          await handleSelectProfileOption(matchedOpt, currQ, query, true);
+          return;
+        }
+
+        if (qLower.includes('no') || qLower.includes('none') || qLower.includes('illa') || qLower.includes('onnumilla') || qLower.includes('nothing') || qLower.includes('never')) {
+          const noneOpt = currQ.options?.find(o => o.id === 'none' || o.id.includes('none') || o.id === 'rf_none');
+          if (noneOpt) {
+            await handleSelectProfileOption(noneOpt, currQ, query, true);
+            return;
+          }
+        }
+        if (qLower.includes('blood') || qLower.includes('raktham') || qLower.includes('chora')) {
+          const bloodOpt = currQ.options?.find(o => o.id.includes('blood') || o.id.includes('chora'));
+          if (bloodOpt) {
+            await handleSelectProfileOption(bloodOpt, currQ, query, true);
+            return;
+          }
+        }
+        if (qLower.includes('fever') || qLower.includes('pani') || qLower.includes('chard')) {
+          const feverOpt = currQ.options?.find(o => o.id.includes('fever') || o.id.includes('pani'));
+          if (feverOpt) {
+            await handleSelectProfileOption(feverOpt, currQ, query, true);
+            return;
+          }
+        }
+        if (qLower.includes('dizz') || qLower.includes('chuttal') || qLower.includes('ksheenam') || qLower.includes('weak')) {
+          const dehyOpt = currQ.options?.find(o => o.id.includes('fluids') || o.id.includes('dehydration') || o.id.includes('weak'));
+          if (dehyOpt) {
+            await handleSelectProfileOption(dehyOpt, currQ, query, true);
+            return;
+          }
+        }
+
+        const numMatch = qLower.match(/\b(\d+)\b/);
+        if (numMatch) {
+          const n = parseInt(numMatch[1], 10);
+          if (n <= 3) {
+            const opt = currQ.options?.find(o => o.id === '1_to_3' || o.id.includes('mild') || o.id.includes('1-3') || o.id.includes('occasional'));
+            if (opt) { await handleSelectProfileOption(opt, currQ, query, true); return; }
+          } else if (n <= 6) {
+            const opt = currQ.options?.find(o => o.id === '4_to_6' || o.id.includes('mod') || o.id.includes('4-6') || o.id.includes('constant'));
+            if (opt) { await handleSelectProfileOption(opt, currQ, query, true); return; }
+          } else {
+            const opt = currQ.options?.find(o => o.id === '7_plus' || o.id.includes('severe') || o.id.includes('6') || o.id.includes('pulsatile'));
+            if (opt) { await handleSelectProfileOption(opt, currQ, query, true); return; }
+          }
+        }
+
+        if (currQ.options && currQ.options.length > 0) {
+          await handleSelectProfileOption(currQ.options[0], currQ, query, true);
+          return;
+        }
+      }
     }
 
     // ==========================================
@@ -1626,6 +2003,23 @@ export default function ChatBox({
               }
             }
 
+            // Clinical profile check if no decision tree
+            const resolvedProf = resolveFollowUpProfile(foundSymptom.id, foundSymptom.label);
+            if (resolvedProf?.profile?.requiresDuration === false && resolvedProf.profile.questions?.length > 0) {
+              updateTriageData(prev => ({
+                ...prev,
+                profileId: resolvedProf.profileId,
+                profileQuestionIndex: 0,
+                profileAnswers: {}
+              }));
+              if (!data.conversationalReply) {
+                askProfileQuestion(resolvedProf.profile, 0);
+              } else {
+                updateCurrentStep('profile_question');
+              }
+              return;
+            }
+
             // No decision tree
             if (durationId) {
               const durationOpt = followUpQuestions?.duration?.options?.find(o => o.id === durationId) || { id: durationId, label: duration || durationId };
@@ -1665,7 +2059,16 @@ export default function ChatBox({
 
         // Body area only
         if (bodyArea && (currentStepRef.current === 'body_area' || !triageDataRef.current.bodyArea)) {
-          handleSelectBodyArea(bodyArea);
+          // Silently set body area and advance step to 'symptom' without posting system chat messages
+          selectingAreaRef.current = true;
+          updateTriageData(prev => ({ ...prev, bodyArea }));
+          updateCurrentStep('symptom');
+          if (onBodyPartSelect) {
+            onBodyPartSelect(bodyArea);
+          }
+          setTimeout(() => {
+            selectingAreaRef.current = false;
+          }, 800);
           return;
         }
       }
@@ -1847,10 +2250,27 @@ export default function ChatBox({
       match.matchedType ===
       'body_area'
     ) {
+      selectingAreaRef.current = true;
+      updateTriageData(prev => ({ ...prev, bodyArea: match.bodyArea }));
+      updateCurrentStep('symptom');
+      if (onBodyPartSelect) {
+        onBodyPartSelect(match.bodyArea);
+      }
+      setTimeout(() => {
+        selectingAreaRef.current = false;
+      }, 800);
 
-      handleSelectBodyArea(
-        match.bodyArea
-      );
+      const lang = convLangRef.current;
+      const displayName = bodyPartsData?.[match.bodyArea]?.displayName || match.bodyArea;
+      let askMsg;
+      if (lang === 'manglish') {
+        askMsg = `Manasilayi. ${displayName} sambandhichu enthanu budhimuttu ennu parayamo?`;
+      } else if (lang === 'malayalam_script') {
+        askMsg = `മനസ്സിലായി. ${displayName} ഭാഗത്ത് എന്താണ് ബുദ്ധിമുട്ട് എന്ന് പറയാമോ?`;
+      } else {
+        askMsg = `Understood. What specific trouble or symptom are you experiencing with your ${displayName}?`;
+      }
+      addBotMessage(askMsg);
 
       return;
     }
@@ -1892,7 +2312,9 @@ export default function ChatBox({
     if (
       !inputText.trim() ||
       isTyping ||
-      isAiProcessing
+      isAiProcessing ||
+      currentStep === 'result' ||
+      currentStepRef.current === 'result'
     ) {
       return;
     }
@@ -2032,7 +2454,7 @@ export default function ChatBox({
                 <div className="message-content">
                   <p>{msg.text}</p>
                   {msg.isResultCard && (
-                    <DepartmentResult recommendation={msg.recommendation} onReset={initChat} />
+                    <DepartmentResult recommendation={msg.recommendation} onReset={initChat} lang={msg.lang || convLangRef.current} />
                   )}
                 </div>
               </div>
@@ -2117,6 +2539,27 @@ export default function ChatBox({
               </div>
             )}
 
+            {currentStep === 'profile_question' && (() => {
+              const profile = followUpProfiles?.[triageData.profileId];
+              const currQ = profile?.questions?.[triageData.profileQuestionIndex || 0];
+              if (!currQ) return null;
+              const lang = convLangRef.current;
+              const options = (currQ.options || []).map(opt => ({
+                id: opt.id,
+                label: (lang === 'manglish' && opt.manglish) ? opt.manglish : (lang === 'malayalam_script' && opt.malayalam) ? opt.malayalam : opt.label,
+                rawOpt: opt
+              }));
+              return (
+                <div className="step-prompt">
+                  <span className="step-label">Select Option:</span>
+                  <QuickChips
+                    options={options}
+                    onSelect={(opt) => handleSelectProfileOption(opt.rawOpt || opt, currQ)}
+                  />
+                </div>
+              );
+            })()}
+
             {currentStep === 'severity' && (
               <div className="step-prompt">
                 <span className="step-label">Select Severity:</span>
@@ -2135,22 +2578,28 @@ export default function ChatBox({
               <span>⚠️ {speechError}</span>
             </div>
           )}
-          <form className="chatbox-input-form" onSubmit={handleTextSubmit}>
+          <form className={`chatbox-input-form ${currentStep === 'result' ? 'disabled-completed' : ''}`} onSubmit={handleTextSubmit}>
             <input
               type="text"
               placeholder={
-                isListening
-                  ? 'Listening to speech... Speak now'
-                  : currentStep === 'body_area'
-                    ? 'Type or speak: "severe headache since yesterday", "fever"...'
-                    : 'Type, speak, or click an option above...'
+                currentStep === 'result'
+                  ? (convLangRef.current === 'malayalam' || convLangRef.current === 'malayalam_script'
+                      ? "കൺസൾട്ടേഷൻ പൂർത്തിയായി. വീണ്ടും തുടങ്ങാൻ 'Start Over' ക്ലിക്ക് ചെയ്യുക."
+                      : convLangRef.current === 'manglish'
+                        ? "Consultation kazhinju. Vere chothikkan 'Start Over' click cheyyuka."
+                        : "Consultation complete. Click 'Start Over' to assess another symptom.")
+                  : isListening
+                    ? 'Listening to speech... Speak now'
+                    : currentStep === 'body_area'
+                      ? 'Type or speak: "severe headache since yesterday", "fever"...'
+                      : 'Type, speak, or click an option above...'
               }
-              value={inputText}
+              value={currentStep === 'result' ? '' : inputText}
               onChange={(e) => setInputText(e.target.value)}
-              disabled={isTyping || isAiProcessing}
+              disabled={isTyping || isAiProcessing || currentStep === 'result'}
             />
 
-            <button type="submit" disabled={!inputText.trim() || isTyping || isAiProcessing} title="Send message">
+            <button type="submit" disabled={!inputText.trim() || isTyping || isAiProcessing || currentStep === 'result'} title={currentStep === 'result' ? "Consultation complete" : "Send message"}>
               {isAiProcessing ? <Loader2 size={16} className="duo-spin" /> : <Send size={16} />}
             </button>
           </form>
@@ -2211,7 +2660,7 @@ export default function ChatBox({
 
             {currentStep === 'result' && recommendation ? (
               <div className="voice-result-container">
-                <DepartmentResult recommendation={recommendation} onReset={initChat} />
+                <DepartmentResult recommendation={recommendation} onReset={initChat} lang={convLangRef.current} />
               </div>
             ) : (
               <div className="voice-options-panel">
@@ -2293,6 +2742,32 @@ export default function ChatBox({
                     </div>
                   </>
                 )}
+                {currentStep === 'profile_question' && (() => {
+                  const profile = followUpProfiles?.[triageData.profileId];
+                  const currQ = profile?.questions?.[triageData.profileQuestionIndex || 0];
+                  if (!currQ) return null;
+                  const lang = convLangRef.current;
+                  return (
+                    <>
+                      <p className="voice-options-label">{currQ.question}</p>
+                      <div className="voice-option-chips">
+                        {(currQ.options || []).map(opt => {
+                          const lbl = (lang === 'manglish' && opt.manglish) ? opt.manglish : (lang === 'malayalam_script' && opt.malayalam) ? opt.malayalam : opt.label;
+                          return (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              className={`voice-option-chip ${opt.redFlag ? 'severity-severe' : ''}`}
+                              onClick={() => handleSelectProfileOption(opt, currQ)}
+                            >
+                              {lbl}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
                 {currentStep === 'severity' && (
                   <>
                     <p className="voice-options-label">How bad does it feel?</p>
@@ -2314,8 +2789,9 @@ export default function ChatBox({
           {/* Footer */}
           <div className="voice-agent-footer">
             <div
-              className={`voice-agent-mic ${isListening ? 'active' : ''}`}
+              className={`voice-agent-mic ${isListening ? 'active' : ''} ${currentStep === 'result' ? 'disabled' : ''}`}
               onClick={() => {
+                if (currentStep === 'result') return;
                 if (isListening) {
                   try { recognitionRef.current?.stop(); } catch { }
                   setIsListening(false);
@@ -2327,18 +2803,24 @@ export default function ChatBox({
                   startAgentListening();
                 }
               }}
-              title={isListening ? "Click to pause listening" : "Click to speak"}
+              title={currentStep === 'result' ? "Consultation complete - Click Start Over" : (isListening ? "Click to pause listening" : "Click to speak")}
             >
               {isListening ? <Mic size={22} /> : <MicOff size={22} />}
             </div>
 
             <div className="voice-footer-meta">
               <span>
-                {isListening
-                  ? 'Listening automatically... Speak naturally'
-                  : voiceStatus === 'speaking'
-                    ? 'Talk2Doc is speaking...'
-                    : 'Hands-free AI consultation • Tap mic or speak'}
+                {currentStep === 'result'
+                  ? (convLangRef.current === 'malayalam' || convLangRef.current === 'malayalam_script'
+                      ? 'കൺസൾട്ടേഷൻ പൂർത്തിയായി • പുതിയ വിലയിരുത്തലിനായി Start Over അമർത്തുക'
+                      : convLangRef.current === 'manglish'
+                        ? 'Consultation kazhinju • Start Over click cheyyuka'
+                        : 'Consultation complete • Tap Start Over to assess another symptom')
+                  : isListening
+                    ? 'Listening automatically... Speak naturally'
+                    : voiceStatus === 'speaking'
+                      ? 'Talk2Doc is speaking...'
+                      : 'Hands-free AI consultation • Tap mic or speak'}
               </span>
               {speechError && (
                 <span className="voice-error-text">⚠️ {speechError}</span>

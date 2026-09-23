@@ -213,18 +213,75 @@ function PatientDashboard() {
                 </div>
 
                 <h3>
-                  {item.results?.[0]?.name
-                    ?.replace(/_/g, " ")
-                    ?.toUpperCase() || "Assessment"}
+                  {item.primarySymptom ||
+                    item.results?.[0]?.name
+                      ?.replace(/_/g, " ")
+                      ?.toUpperCase() ||
+                    "Clinical Assessment"}
                 </h3>
 
-                <p>
-                  <strong>Recommendation:</strong> {item.recommendation || "—"}
-                </p>
+                <div className="pd-report-content" style={{ marginTop: 12, fontSize: '0.9rem', color: '#334155' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '8px', marginBottom: '12px', background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                    <div>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Recommended Specialty</span>
+                      <strong style={{ color: '#0284c7' }}>{item.department || item.recommendation || "General Medicine"}</strong>
+                    </div>
+                    {item.alternativeDepartment && (
+                      <div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Alternative</span>
+                        <span>{item.alternativeDepartment}</span>
+                      </div>
+                    )}
+                    <div>
+                      <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Urgency Level</span>
+                      <span style={{ 
+                        display: 'inline-block', 
+                        padding: '2px 8px', 
+                        borderRadius: '4px', 
+                        fontSize: '0.75rem', 
+                        fontWeight: 600,
+                        background: item.emergency || item.urgencyLevel === 'EMERGENCY' ? '#fee2e2' : item.urgencyLevel === 'URGENT' || item.urgencyLevel === 'PRIORITY' ? '#fef3c7' : '#e0f2fe',
+                        color: item.emergency || item.urgencyLevel === 'EMERGENCY' ? '#dc2626' : item.urgencyLevel === 'URGENT' || item.urgencyLevel === 'PRIORITY' ? '#b45309' : '#0369a1'
+                      }}>
+                        {item.urgencyLevel || (item.emergency ? 'EMERGENCY' : 'ROUTINE')}
+                      </span>
+                    </div>
+                    {(item.duration || item.collected?.duration) && (
+                      <div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Duration</span>
+                        <span>{item.duration || item.collected?.duration}</span>
+                      </div>
+                    )}
+                    {(item.severity || item.collected?.severity) && (
+                      <div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Severity</span>
+                        <span style={{ textTransform: 'capitalize' }}>{item.severity || item.collected?.severity}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {(item.collected?.clinicalSummary || item.reportData?.reason) && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <strong style={{ fontSize: '0.8rem', color: '#475569' }}>Clinical Indication:</strong>
+                      <p style={{ margin: '4px 0', color: '#334155', lineHeight: '1.4', fontSize: '0.85rem' }}>
+                        {item.collected?.clinicalSummary || item.reportData?.reason}
+                      </p>
+                    </div>
+                  )}
+
+                  {(item.collected?.advice || item.reportData?.advice) && (
+                    <div style={{ marginBottom: '10px', background: '#f0fdf4', padding: '10px 14px', borderRadius: '6px', borderLeft: '3px solid #22c55e' }}>
+                      <strong style={{ fontSize: '0.8rem', color: '#166534' }}>Guidance & Patient Advice:</strong>
+                      <p style={{ margin: '4px 0', color: '#15803d', fontSize: '0.85rem', lineHeight: '1.4' }}>
+                        {item.collected?.advice || item.reportData?.advice}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 <details style={{ marginTop: 10 }}>
-                  <summary>View Details</summary>
-                  <pre style={{ fontSize: 12 }}>
+                  <summary style={{ cursor: 'pointer', color: '#0284c7', fontSize: '0.8rem', fontWeight: 600 }}>View Raw Assessment Record</summary>
+                  <pre style={{ fontSize: 11, background: '#f1f5f9', padding: '10px', borderRadius: '6px', overflowX: 'auto', marginTop: '6px' }}>
                     {JSON.stringify(item, null, 2)}
                   </pre>
                 </details>

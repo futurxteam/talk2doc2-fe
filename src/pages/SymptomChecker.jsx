@@ -50,6 +50,7 @@ export default function SymptomChecker() {
   const [selectedBodyPart, setSelectedBodyPart] = useState(null);
   const [bodyPartsData, setBodyPartsData] = useState({});
   const [followUpQuestions, setFollowUpQuestions] = useState({});
+  const [followUpProfiles, setFollowUpProfiles] = useState({});
   const [decisionTrees, setDecisionTrees] = useState({});
   const [activeMobileTab, setActiveMobileTab] = useState('both'); // 'bodymap' | 'chat' | 'both'
   const [loading, setLoading] = useState(true);
@@ -83,6 +84,7 @@ export default function SymptomChecker() {
         if (data.success) {
           setBodyPartsData(data.data || {});
           setFollowUpQuestions(data.followUpQuestions || {});
+          setFollowUpProfiles(data.followUpProfiles || {});
           setDecisionTrees(data.decisionTrees || {});
         }
       })
@@ -432,6 +434,7 @@ export default function SymptomChecker() {
             onBodyPartSelect={setSelectedBodyPart}
             bodyPartsData={bodyPartsData}
             followUpQuestions={followUpQuestions}
+            followUpProfiles={followUpProfiles}
             decisionTrees={decisionTrees}
             onRecommendation={setCurrentRecommendation}
           />

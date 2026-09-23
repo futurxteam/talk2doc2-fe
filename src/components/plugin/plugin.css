@@ -1484,6 +1484,24 @@
   cursor: not-allowed;
 }
 
+.chatbox-input-form.disabled-completed {
+  background: #f8fafc;
+  opacity: 0.9;
+}
+
+.chatbox-input-form.disabled-completed input {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+}
+
+.voice-agent-mic.disabled {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+  filter: grayscale(1);
+}
+
 /* ========================================================
    Interaction Mode Switcher
    ======================================================== */
