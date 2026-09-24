@@ -36,6 +36,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   const meterRafRef = useRef(null);
   const delegationsRef = useRef(new Map());
   const transcriptBufferRef = useRef([]);
+  const hasGreetedRef = useRef(false);
 
   const getAudioContext = () => {
     if (!audioCtxRef.current) {
@@ -346,33 +347,45 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
     }
   };
 
+  const triggerInitialGreeting = () => {
+    if (hasGreetedRef.current) return;
+    hasGreetedRef.current = true;
+
+    if (stopRingRef.current) {
+      stopRingRef.current();
+      stopRingRef.current = null;
+    }
+    setPhase("connected");
+    setStatusText("Meera · AI Assistant Connected");
+
+    // Start call duration timer
+    if (!timerIntervalRef.current) {
+      const start = Date.now();
+      timerIntervalRef.current = setInterval(() => {
+        const sec = Math.floor((Date.now() - start) / 1000);
+        const m = String(Math.floor(sec / 60)).padStart(2, "0");
+        const s = String(sec % 60).padStart(2, "0");
+        setCallTimer(`${m}:${s}`);
+      }, 500);
+    }
+
+    // Immediately trigger Meera to speak her opening greeting in English
+    console.log("🗣️ Triggering initial Meera greeting in English...");
+    sendEvent({
+      type: "response.create",
+      response: {
+        instructions:
+          "The call has connected right now. Greet the caller first immediately in warm, polite, natural English: 'Hello! I am Meera from MyDoktor24/7. Please tell me what symptoms or health concerns you are experiencing, and I will help you find the right specialist and book an appointment.' Speak this opening greeting out loud immediately. If the caller responds in Malayalam, Hindi, or Tamil, switch immediately to that language.",
+      },
+    });
+  };
+
   const onLiveEvent = (evt) => {
     switch (evt.type) {
+      case "session.created":
       case "session.started":
-        if (stopRingRef.current) {
-          stopRingRef.current();
-          stopRingRef.current = null;
-        }
-        setPhase("connected");
-        setStatusText("Meera · AI Assistant Connected");
-
-        // Start call duration timer
-        const start = Date.now();
-        timerIntervalRef.current = setInterval(() => {
-          const sec = Math.floor((Date.now() - start) / 1000);
-          const m = String(Math.floor(sec / 60)).padStart(2, "0");
-          const s = String(sec % 60).padStart(2, "0");
-          setCallTimer(`${m}:${s}`);
-        }, 500);
-
-        // Trigger Meera to speak immediately upon connection
-        sendEvent({
-          type: "response.create",
-          response: {
-            instructions:
-              "The call has connected right now. Immediately speak your opening greeting to the caller in warm, polite Malayalam: 'നമസ്കാരം, ഞാൻ മീരയാണ്. നിങ്ങൾക്ക് എന്ത് അസുഖമാണ് അല്ലെങ്കിൽ ബുദ്ധിമുട്ടാണ് ഉള്ളത് എന്ന് പറയൂ, ശരിയായ ഡോക്ടറെ കണ്ടെത്താനും ബുക്ക് ചെയ്യാനും ഞാൻ സഹായിക്കാം.' If the caller responds in English, switch immediately to English.",
-          },
-        });
+      case "session.updated":
+        triggerInitialGreeting();
         break;
 
       case "session.input_transcript.delta":
@@ -428,6 +441,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
     if (peerRef.current) peerRef.current.close();
     if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
 
+    hasGreetedRef.current = false;
     peerRef.current = null;
     eventsRef.current = null;
     micStreamRef.current = null;
@@ -435,6 +449,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   };
 
   const startCall = async () => {
+    hasGreetedRef.current = false;
     setErrorMsg("");
     setEmergencyAlert(false);
     setScreen("call");
@@ -454,8 +469,10 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
           remoteAudioRef.current.srcObject = stream;
           remoteAudioRef.current.play().then(() => {
             console.log("▶️ Meera voice audio is playing!");
+            setTimeout(() => triggerInitialGreeting(), 300);
           }).catch((err) => {
             console.warn("⚠️ Audio autoplay warning:", err);
+            setTimeout(() => triggerInitialGreeting(), 300);
           });
         }
         startMeter(stream);
@@ -477,7 +494,10 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
 
       const events = peer.createDataChannel("oai-events");
       eventsRef.current = events;
-      events.onopen = () => console.log("🟢 DataChannel 'oai-events' is OPEN");
+      events.onopen = () => {
+        console.log("🟢 DataChannel 'oai-events' is OPEN");
+        setTimeout(() => triggerInitialGreeting(), 300);
+      };
       events.onclose = () => console.log("🔴 DataChannel 'oai-events' CLOSED");
       events.onerror = (err) => console.error("⚠️ DataChannel ERROR:", err);
 
