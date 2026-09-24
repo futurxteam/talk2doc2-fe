@@ -104,6 +104,12 @@ export default function VoiceLiveView({ sessionId: propSessionId }) {
         setTranscript((prev) => {
           const last = prev[prev.length - 1];
           if (last && last.role === role) {
+            const prevFinished = /[.?!]\s*$/.test(last.text.trim());
+            const isNewSentence = /^[A-Z]/.test(text.trim());
+
+            if (prevFinished && isNewSentence) {
+              return [...prev, { role, text: text.trim() }];
+            }
             return [...prev.slice(0, -1), { role, text: last.text + text }];
           }
           return [...prev, { role, text }];

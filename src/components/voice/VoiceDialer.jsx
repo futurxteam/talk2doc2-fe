@@ -40,7 +40,6 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   const transcriptBufferRef = useRef([]);
   const hasGreetedRef = useRef(false);
   const isAssistantSpeakingRef = useRef(false);
-  const pendingEventsRef = useRef([]);
 
   const getAudioContext = () => {
     if (!audioCtxRef.current) {
@@ -153,18 +152,10 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   }, []);
 
   const sendEvent = (evt) => {
-    const payload = JSON.stringify({ event_id: crypto.randomUUID(), ...evt });
     if (eventsRef.current && eventsRef.current.readyState === "open") {
-      try {
-        eventsRef.current.send(payload);
-        return true;
-      } catch (err) {
-        console.error("⚠️ Failed to send event to DataChannel:", err);
-      }
-    } else {
-      console.log("⏳ Queueing event until DataChannel opens:", evt.type);
-      pendingEventsRef.current.push(payload);
-      return false;
+      eventsRef.current.send(
+        JSON.stringify({ event_id: crypto.randomUUID(), ...evt })
+      );
     }
   };
 
@@ -360,6 +351,10 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   };
 
   const triggerInitialGreeting = () => {
+    // Only proceed once DataChannel is fully open
+    if (!eventsRef.current || eventsRef.current.readyState !== "open") {
+      return;
+    }
     if (hasGreetedRef.current) return;
     hasGreetedRef.current = true;
 
@@ -383,29 +378,15 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
 
     // Immediately trigger Meera to speak her opening greeting in English
     console.log("🗣️ Triggering initial Meera greeting in English...");
-
-    // Send an initial conversation user turn so the realtime model has an active conversation context to respond to
     sendEvent({
       type: "conversation.item.create",
       item: {
         type: "message",
         role: "user",
-        content: [
-          {
-            type: "input_text",
-            text: "Hello, I just connected to the call. Please introduce yourself and greet me in English first.",
-          },
-        ],
+        content: [{ type: "input_text", text: "[Call connected. Greet the caller first in English now.]" }],
       },
     });
-
-    sendEvent({
-      type: "response.create",
-      response: {
-        instructions:
-          "The call has connected right now. Greet the caller first immediately in warm, polite, natural English: 'Hello! I am Meera from MyDoktor24/7. Please tell me what symptoms or health concerns you are experiencing, and I will help you find the right specialist and book an appointment.' Speak this opening greeting out loud immediately. If the caller responds in Malayalam, Hindi, or Tamil, switch immediately to that language.",
-      },
-    });
+    sendEvent({ type: "response.create" });
   };
 
   // Immediate interruption / barge-in handler
@@ -560,7 +541,6 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
     if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
 
     hasGreetedRef.current = false;
-    pendingEventsRef.current = [];
     isAssistantSpeakingRef.current = false;
     setIsAssistantSpeaking(false);
     peerRef.current = null;
@@ -571,7 +551,6 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
 
   const startCall = async () => {
     hasGreetedRef.current = false;
-    pendingEventsRef.current = [];
     setErrorMsg("");
     setEmergencyAlert(false);
     setScreen("call");
@@ -619,17 +598,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
       eventsRef.current = events;
       events.onopen = () => {
         console.log("🟢 DataChannel 'oai-events' is OPEN");
-        // Flush any queued events
-        while (pendingEventsRef.current.length > 0) {
-          const item = pendingEventsRef.current.shift();
-          try {
-            console.log("🚀 Sending queued event to DataChannel:", item);
-            events.send(item);
-          } catch (e) {
-            console.error("Error flushing queued event:", e);
-          }
-        }
-        setTimeout(() => triggerInitialGreeting(), 200);
+        setTimeout(() => triggerInitialGreeting(), 300);
       };
       events.onclose = () => console.log("🔴 DataChannel 'oai-events' CLOSED");
       events.onerror = (err) => console.error("⚠️ DataChannel ERROR:", err);
@@ -637,13 +606,8 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
       events.addEventListener("message", ({ data }) => {
         try {
           const evt = JSON.parse(data);
-          if (evt.type === "error" || evt.error) {
-            console.error("❌ Live event error from OpenAI/Server:", evt);
-          }
           onLiveEvent(evt);
-        } catch (err) {
-          console.error("⚠️ Error parsing live event data:", err);
-        }
+        } catch (_) { }
       });
 
       const offer = await peer.createOffer();
