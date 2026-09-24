@@ -27,9 +27,7 @@ export default function VoiceSplitDemoPage() {
             />
             <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
 
-              <span style={{ fontSize: 10, color: "var(--v-reed)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                Voice Hotline
-              </span>
+
             </div>
           </Link>
           <span className="voice-brand-badge">24/7 AI Triage & Booking</span>

@@ -200,10 +200,8 @@ export default function VoiceLiveView({ sessionId: propSessionId }) {
       <div className="live-card">
         <div className="live-header">
           <h2>
-            <span> Meera</span>
-            <small style={{ fontSize: 13, color: "var(--v-muted)", fontWeight: 500 }}>
-              Live Feed ·
-            </small>
+            <span> Meera AI Assistant</span>
+
           </h2>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
