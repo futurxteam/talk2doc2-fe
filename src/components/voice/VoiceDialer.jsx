@@ -762,7 +762,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   return (
     <div className="phone-pane">
       <div className="pane-label">
-        <span> MyDoktor 24/7 AI </span>
+        <span> MyDoktor 24/7 AI Assistant </span>
       </div>
 
       <div className="phone-shell">
@@ -773,7 +773,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
           /* ================= DIALER SCREEN ================= */
           <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <div className="phone-top-bar">
-              <p className="phone-app-title">Mydoktor 24/7 AI </p>
+              <p className="phone-app-title">Mydoktor 24/7 AI Assistant </p>
               <p className="phone-display-number">{displayNumber || " "}</p>
             </div>
 
