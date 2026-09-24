@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import API_BASE_URL from "../../config";
 import "./voice.css";
 
-export default function VoiceDialer({ onCallChange }) {
+export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) {
+  const [internalSessionId] = useState(() => "call_" + Math.random().toString(36).slice(2, 9));
+  const activeSessionId = propSessionId || internalSessionId;
+
   const [screen, setScreen] = useState("dial"); // 'dial' | 'call'
   const [phase, setPhase] = useState("idle"); // 'idle' | 'ringing' | 'connected' | 'searching' | 'ended'
   const [statusText, setStatusText] = useState("Calling…");
@@ -136,7 +139,7 @@ export default function VoiceDialer({ onCallChange }) {
         fetch(`${API_BASE_URL}/api/voice/transcript`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(m),
+          body: JSON.stringify({ ...m, sessionId: activeSessionId }),
         }).catch(() => { });
       });
     }, 350);
@@ -169,7 +172,7 @@ export default function VoiceDialer({ onCallChange }) {
         fetch(`${API_BASE_URL}/api/voice/transcript`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ role: "patient", text }),
+          body: JSON.stringify({ role: "patient", text, sessionId: activeSessionId }),
         }).catch(() => { });
       },
       testBeep: () => {
@@ -208,6 +211,7 @@ export default function VoiceDialer({ onCallChange }) {
             doctor_id: selectedDoctorId || "d001",
             caller_phone: phone || "9847012345",
             patient_name: name || "Test Patient",
+            sessionId: activeSessionId,
           }),
         })
           .then((r) => r.json())
@@ -243,7 +247,7 @@ export default function VoiceDialer({ onCallChange }) {
       await fetch(`${API_BASE_URL}/api/voice/emergency`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(args),
+        body: JSON.stringify({ ...args, sessionId: activeSessionId }),
       }).catch(() => { });
       setEmergencyAlert(true);
       return done({
@@ -256,7 +260,7 @@ export default function VoiceDialer({ onCallChange }) {
       await fetch(`${API_BASE_URL}/api/voice/assessment`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(args),
+        body: JSON.stringify({ ...args, sessionId: activeSessionId }),
       }).catch(() => { });
       setStatusText(`Specialist: ${args.specialty || "Recommended"}`);
       return done({
@@ -267,14 +271,14 @@ export default function VoiceDialer({ onCallChange }) {
     }
 
     if (item.name === "find_specialists") {
-      setStatusText("Finding matching doctors in Kochi…");
+      setStatusText("Finding matching doctors …");
       const res = await fetch(`${API_BASE_URL}/api/voice/find`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(args),
+        body: JSON.stringify({ ...args, sessionId: activeSessionId }),
       });
       const data = await res.json().catch(() => ({}));
-      setStatusText("Meera · AI Clinical Assistant");
+      setStatusText("Meera · AI  Assistant");
       if (data?.matches) {
         setDoctorMatches(data);
       }
@@ -286,7 +290,7 @@ export default function VoiceDialer({ onCallChange }) {
       const res = await fetch(`${API_BASE_URL}/api/voice/select`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(args),
+        body: JSON.stringify({ ...args, sessionId: activeSessionId }),
       });
       const data = await res.json().catch(() => ({}));
       return done(data);
@@ -304,6 +308,7 @@ export default function VoiceDialer({ onCallChange }) {
           age: args.age,
           gender: args.gender,
           preferred_slot: args.preferred_slot,
+          sessionId: activeSessionId,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -480,7 +485,7 @@ export default function VoiceDialer({ onCallChange }) {
         try {
           const evt = JSON.parse(data);
           onLiveEvent(evt);
-        } catch (_) {}
+        } catch (_) { }
       });
 
       const offer = await peer.createOffer();
@@ -490,7 +495,10 @@ export default function VoiceDialer({ onCallChange }) {
       const res = await fetch(`${API_BASE_URL}/api/voice/session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sdp: peer.localDescription.sdp }),
+        body: JSON.stringify({
+          sdp: peer.localDescription.sdp,
+          sessionId: activeSessionId,
+        }),
       });
 
       if (!res.ok) {
@@ -534,7 +542,11 @@ export default function VoiceDialer({ onCallChange }) {
     }
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
-    fetch(`${API_BASE_URL}/api/voice/end`, { method: "POST" }).catch(() => { });
+    fetch(`${API_BASE_URL}/api/voice/end`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: activeSessionId }),
+    }).catch(() => { });
     teardownCall();
 
     setPhase("ended");
@@ -568,7 +580,7 @@ export default function VoiceDialer({ onCallChange }) {
     fetch(`${API_BASE_URL}/api/voice/select`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ doctor_id: doc.id }),
+      body: JSON.stringify({ doctor_id: doc.id, sessionId: activeSessionId }),
     }).catch(() => { });
   };
 
@@ -591,6 +603,7 @@ export default function VoiceDialer({ onCallChange }) {
           caller_phone: patientPhone,
           patient_name: patientName || "Caller Patient",
           preferred_slot: "Tomorrow 10:00 AM",
+          sessionId: activeSessionId,
         }),
       });
       const data = await res.json();
@@ -675,7 +688,7 @@ export default function VoiceDialer({ onCallChange }) {
             </div>
 
             <p className="phone-helper-hint">
-              Speak with Meera, our clinical AI assistant, who finds the right specialist in Kochi and registers your appointment.
+              Speak with Meera, our clinical AI assistant, who finds the right specialist and registers your appointment.
             </p>
 
             {errorMsg && (

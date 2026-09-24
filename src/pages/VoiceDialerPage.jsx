@@ -1,9 +1,18 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import VoiceDialer from "../components/voice/VoiceDialer";
 import "../components/voice/voice.css";
 
 export default function VoiceDialerPage() {
+  const [searchParams] = useSearchParams();
+  const [sessionId] = useState(() => {
+    return (
+      searchParams.get("session") ||
+      searchParams.get("sessionId") ||
+      "call_" + Math.random().toString(36).slice(2, 10)
+    );
+  });
+
   return (
     <div
       style={{
@@ -33,7 +42,7 @@ export default function VoiceDialerPage() {
         </Link>
       </div>
 
-      <VoiceDialer />
+      <VoiceDialer sessionId={sessionId} />
     </div>
   );
 }

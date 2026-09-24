@@ -1,9 +1,12 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import VoiceLiveView from "../components/voice/VoiceLiveView";
 import "../components/voice/voice.css";
 
 export default function VoiceLiveViewPage() {
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session") || searchParams.get("sessionId") || undefined;
+
   return (
     <div
       style={{
@@ -30,7 +33,7 @@ export default function VoiceLiveViewPage() {
       </div>
 
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <VoiceLiveView />
+        <VoiceLiveView sessionId={sessionId} />
       </div>
     </div>
   );

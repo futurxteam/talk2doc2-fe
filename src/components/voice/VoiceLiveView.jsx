@@ -8,11 +8,15 @@ const URGENCY_LABELS = {
   same_day: "Same Day (Urgent)",
 };
 
-export default function VoiceLiveView() {
+export default function VoiceLiveView({ sessionId: propSessionId }) {
+  const queryParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+  const activeSessionId = propSessionId || queryParams.get("session") || queryParams.get("sessionId") || null;
+
   const [callState, setCallState] = useState(null);
   const [transcript, setTranscript] = useState([]);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [duration, setDuration] = useState("0:00");
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const audioCtxRef = useRef(null);
   const transcriptEndRef = useRef(null);
@@ -63,11 +67,14 @@ export default function VoiceLiveView() {
 
   // Connect to SSE stream
   useEffect(() => {
-    const sseUrl = `${API_BASE_URL}/api/voice/events`;
+    const sseUrl = activeSessionId
+      ? `${API_BASE_URL}/api/voice/events?sessionId=${encodeURIComponent(activeSessionId)}`
+      : `${API_BASE_URL}/api/voice/events`;
+
     const eventSource = new EventSource(sseUrl);
 
     eventSource.onopen = () => {
-      console.log("Connected to Live Voice SSE stream");
+      console.log(`Connected to Live Voice SSE stream [Session: ${activeSessionId || "global"}]`);
     };
 
     eventSource.onerror = () => {
@@ -152,7 +159,7 @@ export default function VoiceLiveView() {
       eventSource.close();
       if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
     };
-  }, [soundEnabled]);
+  }, [soundEnabled, activeSessionId]);
 
   // Auto-scroll transcript
   useEffect(() => {
@@ -191,17 +198,36 @@ export default function VoiceLiveView() {
           <h2>
             <span> Meera</span>
             <small style={{ fontSize: 13, color: "var(--v-muted)", fontWeight: 500 }}>
-              Live Clinical Feed · Kochi
+              Live Clinical Feed ·
             </small>
           </h2>
 
-          <button
-            className="sound-toggle-btn"
-            onClick={toggleSound}
-            aria-pressed={soundEnabled}
-          >
-            {soundEnabled ? "🔊 Sound Chimes ON" : "🔇 Sound Alerts OFF"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            {activeSessionId && (
+              <button
+                type="button"
+                className="sound-toggle-btn"
+                style={{ background: "#eef7f3", color: "#0F3B3D", borderColor: "#cce8dc" }}
+                onClick={() => {
+                  const shareUrl = `${window.location.origin}/voice/live?session=${encodeURIComponent(activeSessionId)}`;
+                  navigator.clipboard?.writeText(shareUrl);
+                  setCopiedLink(true);
+                  setTimeout(() => setCopiedLink(false), 2000);
+                }}
+                title="Copy observer link to view this call on another device"
+              >
+                {copiedLink ? "✓ Link Copied!" : "🔗 Share Observer Link"}
+              </button>
+            )}
+
+            <button
+              className="sound-toggle-btn"
+              onClick={toggleSound}
+              aria-pressed={soundEnabled}
+            >
+              {soundEnabled ? "🔊 Sound Chimes ON" : "🔇 Sound Alerts OFF"}
+            </button>
+          </div>
         </div>
 
         {!callState ? (

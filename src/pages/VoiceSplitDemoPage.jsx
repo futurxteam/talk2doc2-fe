@@ -1,10 +1,19 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import VoiceDialer from "../components/voice/VoiceDialer";
 import VoiceLiveView from "../components/voice/VoiceLiveView";
 import "../components/voice/voice.css";
 
 export default function VoiceSplitDemoPage() {
+  const [searchParams] = useSearchParams();
+  const [sessionId] = useState(() => {
+    return (
+      searchParams.get("session") ||
+      searchParams.get("sessionId") ||
+      "call_" + Math.random().toString(36).slice(2, 10)
+    );
+  });
+
   return (
     <div className="voice-demo-container">
       {/* Top Navigation Bar */}
@@ -23,8 +32,8 @@ export default function VoiceSplitDemoPage() {
 
       {/* Split Dual-Pane View */}
       <main className="voice-split-body">
-        <VoiceDialer />
-        <VoiceLiveView />
+        <VoiceDialer sessionId={sessionId} />
+        <VoiceLiveView sessionId={sessionId} />
       </main>
     </div>
   );
