@@ -159,6 +159,24 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
     }
   };
 
+  // Cleanup on unmount or tab close to prevent accidental token leakage
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      endCall();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      teardownCall();
+      fetch(`${API_BASE_URL}/api/voice/end`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: activeSessionId }),
+        keepalive: true,
+      }).catch(() => { });
+    };
+  }, [activeSessionId]);
+
   // Expose window.talk2doc for console testing
   useEffect(() => {
     window.talk2doc = {
