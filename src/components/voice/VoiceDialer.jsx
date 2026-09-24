@@ -761,9 +761,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
 
   return (
     <div className="phone-pane">
-      <div className="pane-label">
-        <span> MyDoktor 24/7 AI Assistant </span>
-      </div>
+
 
       <div className="phone-shell">
         {/* Real DOM audio element for browser audio playback */}
