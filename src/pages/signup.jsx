@@ -1,29 +1,29 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { signup ,getInsuranceProviders} from "./api";
+import { signup, getInsuranceProviders } from "./api";
 import "./style/signup.css";
 
 function Signup() {
   const navigate = useNavigate();
-const [showTerms, setShowTerms] = useState(false);
-const [insuranceProviders, setInsuranceProviders] = useState([]);
-useEffect(() => {
-  getInsuranceProviders()
-    .then((res) => {
-      if (res.success) {
-        setInsuranceProviders(res.providers);
-      }
-    })
-    .catch((err) => {
-      console.error("Failed to load insurance providers", err);
-    });
-}, []);
+  const [showTerms, setShowTerms] = useState(false);
+  const [insuranceProviders, setInsuranceProviders] = useState([]);
+  useEffect(() => {
+    getInsuranceProviders()
+      .then((res) => {
+        if (res.success) {
+          setInsuranceProviders(res.providers);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load insurance providers", err);
+      });
+  }, []);
 
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     gender: "",
-insuranceProvider: "",
+    insuranceProvider: "",
     height: "",
     weight: "",
     accepted: false,
@@ -62,45 +62,45 @@ insuranceProvider: "",
   };
 
   // Step 2: Verify OTP & Final Signup
-const handleVerifyOtp = async (e) => {
-  e.preventDefault();
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
 
-  if (otp !== "123") {
-    alert("Incorrect OTP. Use 123 for demo.");
-    return;
-  }
+    if (otp !== "123") {
+      alert("Incorrect OTP. Use 123 for demo.");
+      return;
+    }
 
-const { name, gender, phone, insuranceProvider, height, weight } = formData;
+    const { name, gender, phone, insuranceProvider, height, weight } = formData;
 
-  if (!name || !phone || !gender) {
-    alert("Please fill in Name, Phone, and Gender.");
-    return;
-  }
+    if (!name || !phone || !gender) {
+      alert("Please fill in Name, Phone, and Gender.");
+      return;
+    }
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // Include OTP in the request
-    const res = await signup({
-      name,
-      gender,
-      phone,
-  insuranceProvider,
+      // Include OTP in the request
+      const res = await signup({
+        name,
+        gender,
+        phone,
+        insuranceProvider,
         height,
-      weight,
-      otp, // This was missing!
-    });
+        weight,
+        otp, // This was missing!
+      });
 
-    alert("Signup successful!");
-    navigate("/login"); // Go to login after signup
+      alert("Signup successful!");
+      navigate("/login"); // Go to login after signup
 
-  } catch (err) {
-    console.error("Signup error:", err);
-    alert("Error: " + (err.message || "Signup failed"));
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      console.error("Signup error:", err);
+      alert("Error: " + (err.message || "Signup failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="signup-container">
@@ -110,7 +110,7 @@ const { name, gender, phone, insuranceProvider, height, weight } = formData;
         </button>
 
         <div className="signup-header">
-          
+
           <h2>Create Account</h2>
           <p>Join us to manage your health better</p>
         </div>
@@ -146,20 +146,20 @@ const { name, gender, phone, insuranceProvider, height, weight } = formData;
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
-<label>Insurance Provider</label>
-         
-         <select
-  name="insuranceProvider"
-  value={formData.insuranceProvider}
-  onChange={handleChange}
->
-  <option value="">Select Insurance Provider</option>
-  {insuranceProviders.map((p) => (
-    <option key={p._id} value={p.name}>
-      {p.name}
-    </option>
-  ))}
-</select>
+          <label>Insurance Provider</label>
+
+          <select
+            name="insuranceProvider"
+            value={formData.insuranceProvider}
+            onChange={handleChange}
+          >
+            <option value="">Select Insurance Provider</option>
+            {insuranceProviders.map((p) => (
+              <option key={p._id} value={p.name}>
+                {p.name}
+              </option>
+            ))}
+          </select>
 
 
           {/* Height */}
@@ -183,24 +183,24 @@ const { name, gender, phone, insuranceProvider, height, weight } = formData;
           />
 
           {/* Terms */}
-         <div className="terms">
-  <input
-    type="checkbox"
-    name="accepted"
-    checked={formData.accepted}
-    onChange={handleChange}
-  />
-  <span>
-    I accept the{" "}
-    <button
-      type="button"
-      className="terms-link"
-      onClick={() => setShowTerms(true)}
-    >
-      Terms & Conditions
-    </button>
-  </span>
-</div>
+          <div className="terms">
+            <input
+              type="checkbox"
+              name="accepted"
+              checked={formData.accepted}
+              onChange={handleChange}
+            />
+            <span>
+              I accept the{" "}
+              <button
+                type="button"
+                className="terms-link"
+                onClick={() => setShowTerms(true)}
+              >
+                Terms & Conditions
+              </button>
+            </span>
+          </div>
 
 
           {/* OTP Flow */}
@@ -241,36 +241,36 @@ const { name, gender, phone, insuranceProvider, height, weight } = formData;
         </form>
       </div>
       {showTerms && (
-  <div className="terms-modal-backdrop" onClick={() => setShowTerms(false)}>
-    <div className="terms-modal" onClick={(e) => e.stopPropagation()}>
-      <h3>Terms & Conditions</h3>
+        <div className="terms-modal-backdrop" onClick={() => setShowTerms(false)}>
+          <div className="terms-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Terms & Conditions</h3>
 
-      <div className="terms-content">
-        <p>
-          By using Talk2Doc 24/7, you agree to our terms of service. This platform
-          provides health assistance and is not a replacement for emergency
-          medical services.
-        </p>
+            <div className="terms-content">
+              <p>
+                By using MyDoktor247, you agree to our terms of service. This platform
+                provides health assistance and is not a replacement for emergency
+                medical services.
+              </p>
 
-        <p>
-          Your data is securely stored and used only to provide personalized
-          healthcare services.
-        </p>
+              <p>
+                Your data is securely stored and used only to provide personalized
+                healthcare services.
+              </p>
 
-        <p>
-          Always consult a certified doctor for critical conditions.
-        </p>
-      </div>
+              <p>
+                Always consult a certified doctor for critical conditions.
+              </p>
+            </div>
 
-      <button
-        className="close-terms-btn"
-        onClick={() => setShowTerms(false)}
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
+            <button
+              className="close-terms-btn"
+              onClick={() => setShowTerms(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

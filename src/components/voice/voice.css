@@ -1,0 +1,1041 @@
+/* ==========================================================================
+   Talk2Doc Voice Line & Clinical Live View Stylesheet
+   ========================================================================== */
+
+:root {
+  --v-lagoon: #0F3B3D;
+  --v-lagoon-deep: #09292B;
+  --v-lagoon-light: #164E51;
+  --v-foam: #E7F1EC;
+  --v-reed: #8DBFAF;
+  --v-reed-dim: rgba(141, 191, 175, 0.16);
+  --v-call: #2FBF71;
+  --v-call-hover: #269E5D;
+  --v-end: #E5484D;
+  --v-end-hover: #C5373C;
+  --v-lamp: #F4C95D;
+  --v-card-bg: #FFFFFF;
+  --v-border: #DCE6E2;
+  --v-ink: #13302F;
+  --v-muted: #5E7773;
+}
+
+/* ---------------- Split-Screen Demo Page ---------------- */
+.voice-demo-container {
+  min-height: 100vh;
+  background: #E9EFEC;
+  display: flex;
+  flex-direction: column;
+}
+
+.voice-demo-header {
+  background: var(--v-lagoon);
+  color: #fff;
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.voice-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.voice-brand-badge {
+  background: rgba(141, 191, 175, 0.2);
+  color: var(--v-reed);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(141, 191, 175, 0.3);
+}
+
+.voice-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.voice-nav-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.voice-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.voice-split-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 960px) {
+  .voice-split-body {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}
+
+/* ---------------- Phone Dialer Wrapper ---------------- */
+.phone-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.pane-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #13302F;
+  margin: 0 0 10px 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pane-label span {
+  font-weight: 500;
+  color: #5E7773;
+}
+
+.phone-shell {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: 840px;
+  background: linear-gradient(180deg, var(--v-lagoon) 0%, var(--v-lagoon-deep) 100%);
+  border-radius: 40px;
+  box-shadow: 0 0 0 8px #041617, 0 30px 80px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  padding: 36px 26px 30px;
+  display: flex;
+  flex-direction: column;
+  color: var(--v-foam);
+  margin: 0 auto;
+}
+
+/* Header inside Phone */
+.phone-top-bar {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.phone-app-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--v-reed);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.phone-display-number {
+  font-size: 34px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  margin-top: 14px;
+  min-height: 48px;
+  color: #FFFFFF;
+}
+
+/* Keypad Grid */
+.phone-keypad {
+  margin-top: auto;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 76px);
+  gap: 16px 24px;
+  justify-content: center;
+}
+
+.keypad-key {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--v-reed-dim);
+  border: 1px solid rgba(141, 191, 175, 0.2);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.keypad-key:active {
+  background: rgba(141, 191, 175, 0.35);
+  transform: scale(0.95);
+}
+
+.keypad-key b {
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.keypad-key small {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--v-reed);
+  letter-spacing: 0.14em;
+  margin-top: 2px;
+}
+
+.phone-dial-actions {
+  display: grid;
+  grid-template-columns: 76px 76px 76px;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.btn-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-circle-call {
+  background: var(--v-call);
+  color: #fff;
+  grid-column: 2;
+  box-shadow: 0 4px 18px rgba(47, 191, 113, 0.4);
+}
+
+.btn-circle-call:hover {
+  background: var(--v-call-hover);
+  transform: scale(1.04);
+}
+
+.btn-circle-back {
+  background: transparent;
+  color: var(--v-reed);
+  grid-column: 3;
+  width: 52px;
+  height: 52px;
+  justify-self: center;
+  opacity: 0.8;
+}
+
+.btn-circle-back:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.phone-helper-hint {
+  font-size: 12px;
+  color: var(--v-reed);
+  text-align: center;
+  line-height: 1.4;
+  margin-top: 6px;
+  padding: 0 10px;
+}
+
+/* ---------------- In-Call Active Screen ---------------- */
+.incall-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.incall-title {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+}
+
+.incall-status {
+  font-size: 15px;
+  color: var(--v-reed);
+  margin-top: 6px;
+  text-align: center;
+  min-height: 22px;
+  font-weight: 500;
+}
+
+.incall-timer {
+  font-size: 15px;
+  color: var(--v-reed);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+/* Audio Visualizer Orb */
+.orb-container {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: auto 0;
+  display: grid;
+  place-items: center;
+  transition: all 0.3s ease;
+}
+
+.incall-has-results .orb-container {
+  width: 130px;
+  height: 130px;
+  margin: 10px 0;
+}
+
+.orb-ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+  border: 1.5px solid var(--v-reed);
+  transition: transform 0.09s linear, opacity 0.09s linear;
+}
+
+.orb-ring:nth-child(1) {
+  width: 120px;
+  height: 120px;
+  opacity: 0.3;
+}
+
+.orb-ring:nth-child(2) {
+  width: 170px;
+  height: 170px;
+  opacity: 0.15;
+}
+
+.orb-ring:nth-child(3) {
+  width: 210px;
+  height: 210px;
+  opacity: 0.08;
+}
+
+.orb-avatar {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--v-foam);
+  color: var(--v-lagoon);
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+}
+
+.incall-has-results .orb-avatar {
+  width: 72px;
+  height: 72px;
+  font-size: 26px;
+}
+
+.is-ringing .orb-ring {
+  animation: ring-pulse 2.2s ease-out infinite;
+}
+
+.is-ringing .orb-ring:nth-child(2) {
+  animation-delay: 0.7s;
+}
+
+.is-ringing .orb-ring:nth-child(3) {
+  animation-delay: 1.4s;
+}
+
+@keyframes ring-pulse {
+  from {
+    transform: scale(0.7);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+/* In-Call Doctor Selection Sheet */
+.caller-sheet {
+  width: 100%;
+  background: var(--v-foam);
+  color: var(--v-ink);
+  border-radius: 20px;
+  padding: 14px;
+  margin-bottom: 16px;
+  flex: 1 1 0;
+  min-height: 160px;
+  max-height: 320px;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.caller-sheet-header {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--v-lagoon);
+}
+
+.caller-sheet-note {
+  font-size: 12px;
+  color: #4B6B66;
+  margin-bottom: 10px;
+  line-height: 1.35;
+}
+
+.caller-doc-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.caller-doc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.caller-doc-card.is-chosen {
+  border-color: var(--v-call);
+  background: #F4FBF7;
+}
+
+.caller-doc-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--v-ink);
+}
+
+.caller-doc-clinic {
+  font-size: 12px;
+  color: var(--v-muted);
+  margin-top: 2px;
+}
+
+.caller-doc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.caller-tag {
+  font-size: 11px;
+  font-weight: 600;
+  background: #EAF2EF;
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+.caller-tag-yes {
+  background: #DDF3E6;
+  color: #1D6B45;
+}
+
+.caller-tag-fee {
+  background: #EFF6FF;
+  color: #1E40AF;
+}
+
+.caller-book-btn {
+  margin-top: 8px;
+  width: 100%;
+  background: var(--v-call);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.caller-book-btn:hover {
+  background: var(--v-call-hover);
+}
+
+/* Call Emergency Warning */
+.phone-alert-banner {
+  background: var(--v-end);
+  color: #fff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  width: 100%;
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Call Actions (Mute & End) */
+.incall-actions {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.incall-action-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--v-reed);
+}
+
+.btn-mute {
+  background: var(--v-reed-dim);
+  color: var(--v-foam);
+  width: 60px;
+  height: 60px;
+}
+
+.btn-mute.is-muted {
+  background: var(--v-foam);
+  color: var(--v-lagoon);
+}
+
+.btn-end {
+  background: var(--v-end);
+  color: #fff;
+  width: 64px;
+  height: 64px;
+}
+
+.btn-end:hover {
+  background: var(--v-end-hover);
+}
+
+/* ---------------- Instant Booking Modal ---------------- */
+.booking-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 22, 23, 0.88);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 40px;
+  overflow: hidden;
+}
+
+.booking-modal-content {
+  background: #FFFFFF;
+  color: var(--v-ink);
+  width: 100%;
+  padding: 24px;
+  border-radius: 28px 28px 0 0;
+  animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.booking-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--v-lagoon);
+}
+
+.booking-modal-sub {
+  font-size: 13px;
+  color: var(--v-muted);
+  margin-bottom: 16px;
+}
+
+.booking-field {
+  margin-bottom: 12px;
+}
+
+.booking-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.booking-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.booking-field input:focus {
+  border-color: var(--v-call);
+  box-shadow: 0 0 0 2px rgba(47, 191, 113, 0.2);
+}
+
+.booking-submit-btn {
+  width: 100%;
+  background: var(--v-call);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.booking-submit-btn:hover {
+  background: var(--v-call-hover);
+}
+
+.booking-cancel-btn {
+  width: 100%;
+  background: transparent;
+  color: #6B7280;
+  border: none;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+/* ---------------- Operator Live View Pane ---------------- */
+.live-pane {
+  display: flex;
+  flex-direction: column;
+}
+
+.live-card {
+  background: var(--v-card-bg);
+  border: 1px solid var(--v-border);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  height: 840px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.live-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--v-border);
+  margin-bottom: 16px;
+}
+
+.live-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--v-ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sound-toggle-btn {
+  background: rgba(141, 191, 175, 0.18);
+  color: var(--v-lagoon);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.live-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1200px) {
+  .live-grid {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+}
+
+.live-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+.live-panel {
+  background: #F9FBFA;
+  border: 1px solid var(--v-border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.live-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--v-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.spec-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.spec-name {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--v-ink);
+}
+
+.urgency-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.urgency-routine { background: #2F7D5F; }
+.urgency-soon { background: #B9730F; }
+.urgency-same_day { background: #D6383E; }
+
+.live-reason {
+  font-size: 14px;
+  color: #374151;
+  margin-top: 8px;
+  line-height: 1.45;
+}
+
+.live-symptoms {
+  font-size: 13px;
+  color: var(--v-muted);
+  margin-top: 6px;
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.filter-chip {
+  background: #FFFFFF;
+  border: 1px solid var(--v-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.filter-chip b {
+  font-weight: 700;
+  color: var(--v-ink);
+}
+
+.relaxed-box {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #92400E;
+  margin-top: 10px;
+}
+
+/* Confirmed Booking Banner */
+.confirmed-booking-banner {
+  background: #ECFDF5;
+  border: 1.5px solid #10B981;
+  border-radius: 12px;
+  padding: 14px;
+  animation: pulse-border 2s infinite;
+}
+
+.confirmed-booking-banner h4 {
+  color: #065F46;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.confirmed-booking-banner p {
+  font-size: 13px;
+  color: #047857;
+  margin: 2px 0;
+}
+
+/* Transcript Column */
+.transcript-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.transcript-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 200px;
+}
+
+.chat-bubble {
+  max-width: 88%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.chat-bubble.assistant {
+  align-self: flex-start;
+  background: #F3F4F6;
+  color: #1F2937;
+}
+
+.chat-bubble.patient {
+  align-self: flex-end;
+  background: #E6F4EA;
+  color: #0D652D;
+}
+
+.chat-speaker {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.empty-live-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--v-muted);
+  margin: auto;
+}
+
+.pulse-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--v-call);
+  display: inline-block;
+  margin-bottom: 16px;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 191, 113, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(47, 191, 113, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(47, 191, 113, 0); }
+}
+
+/* ==========================================================================
+   Mobile Responsive Rules (Full Width Dialer, Transcript Only Below)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .voice-split-body {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .phone-pane {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Fill dialer fully on mobile */
+  .phone-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 560px;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25) !important;
+    padding: 24px 16px 20px !important;
+  }
+
+  .phone-keypad {
+    grid-template-columns: repeat(3, 72px);
+    gap: 14px 18px;
+  }
+
+  .keypad-key {
+    width: 72px;
+    height: 72px;
+  }
+
+  .pane-label {
+    display: none; /* Hide pane labels on mobile for clean screen utilization */
+  }
+
+  /* Right pane on mobile: Below only transcript */
+  .live-pane {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 4px;
+  }
+
+  .live-card {
+    border-radius: 20px !important;
+    padding: 16px !important;
+    min-height: auto !important;
+    height: auto !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Hide left column (specialty recommendation and doctor matches) on mobile */
+  .live-col {
+    display: none !important;
+  }
+
+  /* Show only the live dialogue transcript column below the dialer */
+  .live-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    display: block !important;
+  }
+
+  .transcript-col {
+    width: 100% !important;
+    display: flex !important;
+    min-height: 280px !important;
+    max-height: 440px !important;
+  }
+
+  .transcript-scroll {
+    max-height: 340px !important;
+  }
+
+  .empty-live-state {
+    padding: 32px 14px !important;
+  }
+
+  .voice-demo-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .voice-brand-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .voice-brand-logo span:first-child {
+    font-size: 15px;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .voice-brand-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .voice-nav-actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .voice-nav-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
+@media (max-width: 440px) {
+  .voice-demo-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .voice-brand-logo span:first-child {
+    font-size: 14px;
+  }
+
+  .voice-brand-badge {
+    display: none; /* Hide badge on extra-narrow phones for optimal title & button alignment */
+  }
+
+  .voice-nav-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+

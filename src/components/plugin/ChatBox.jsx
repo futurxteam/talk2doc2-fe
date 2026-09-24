@@ -29,6 +29,7 @@ import DepartmentResult from './DepartmentResult';
 import BookAppointmentWidget from '../../pages/BookAppointment';
 import { saveAssessmentResult } from '../../api/usersApi';
 import { matchFreeTextQuery, matchDurationQuery, matchSeverityQuery, isNegativeResponse, extractFullTriageIntent, loadSynonymsFromApi, detectFrontendLanguage } from '../../utils/symptomSynonyms';
+import VoiceExperience from '../voice/VoiceExperience';
 
 /* ========================================================
    In-Chat Doctor List & Selection Component
@@ -301,6 +302,7 @@ export default function ChatBox({
   // 'idle' | 'listening' | 'thinking' | 'speaking'
 
   const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [showVoiceExperience, setShowVoiceExperience] = useState(false);
 
   // Voice Customization Settings
   const [selectedVoiceUri, setSelectedVoiceUri] = useState(() => {
@@ -880,61 +882,10 @@ export default function ChatBox({
   };
 
   const switchToVoiceMode = async () => {
-    if (interactionMode === 'voice') return;
-
-    if (restartTimerRef.current) {
-      clearTimeout(restartTimerRef.current);
-      restartTimerRef.current = null;
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
     }
-
-    voiceModeRef.current = true;
-    voiceProcessingRef.current = false;
-
-    setInteractionMode('voice');
-    setVoiceTranscript('');
-    voiceTranscriptRef.current = '';
-    setSpeechError(null);
-
-    // If diagnosis is already completed, DO NOT start over or speak greeting!
-    if (currentStepRef.current === 'result' || recommendation) {
-      setVoiceStatus('idle');
-      return;
-    }
-
-    // If already in progress, keep existing messages and current step!
-    if (messages.length > 1 || currentStep !== 'body_area') {
-      setTimeout(() => {
-        if (voiceModeRef.current && !isRecognizingRef.current) {
-          startAgentListening();
-        }
-      }, 300);
-      return;
-    }
-
-    // Brand new initial conversation
-    const greeting =
-      "Hey! Don't worry at all, I'm right here with you. Tell me what's going on or how you're feeling today — take your time, in any words you like.";
-
-    const initialMsgs = [
-      {
-        id: Date.now(),
-        sender: 'bot',
-        text: greeting
-      }
-    ];
-
-    messagesRef.current = initialMsgs;
-    setMessages(initialMsgs);
-
-    try {
-      // speakAgent auto-starts listening when it finishes!
-      await speakAgent(greeting);
-    } catch (e) {
-      console.warn("Speech synthesis error:", e);
-      if (voiceModeRef.current && !isRecognizingRef.current) {
-        startAgentListening();
-      }
-    }
+    setShowVoiceExperience(true);
   };
 
   const exitVoiceMode = () => {

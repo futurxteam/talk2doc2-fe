@@ -57,42 +57,65 @@ export default function Home() {
           {/* Left Section */}
           <Reveal direction="top">
             <div className="home-left">
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  background: "rgba(47, 191, 113, 0.12)",
+                  color: "#1D6B45",
+                  border: "1px solid rgba(47, 191, 113, 0.3)",
+                  padding: "6px 14px",
+                  borderRadius: "999px",
+                  fontSize: "13px",
+                  fontWeight: "700",
+                  marginBottom: "16px",
+                }}
+              >
+                <span>🎙️</span> NEW: 24/7 AI Doctor Voice Line (English & Malayalam)
+              </div>
+
               <h1>
-                AI-Powered Symptom Analysis
+                Speak to AI Doctors.
                 <br />
-                with Verified Doctor Consultations
+                Instant Matching & Slot Booking.
               </h1>
 
               <p>
-                Experience the future of healthcare with <strong>Talk2Doc</strong> –
-                an intelligent AI symptom predictor that connects you with verified
-                medical professionals for accurate diagnosis and treatment.
+                Experience the future of healthcare with <strong>Talk2Doc</strong>. Dial our 24/7 AI voice line to speak with Meera in English, Malayalam, Hindi or Tamil, get clinical specialist referrals across 90+ doctors in Kochi, and book your appointment automatically.
               </p>
 
               <ul className="feature-list">
-                <li>✔ AI-Powered Symptom Analysis in Real-Time</li>
-                <li>✔ Verified Doctor Consultations & Approvals</li>
-                <li>✔ Comprehensive Medical History Tracking</li>
-                <li>✔ Secure & HIPAA-Compliant Platform</li>
+                <li>✔ 🎙️ 24/7 AI Voice Hotline — No App Download Needed</li>
+                <li>✔ 🏥 90 Verified Specialists across 15 Kochi Localities</li>
+                <li>✔ ⚡ Instant Account Creation by Phone & Slot Booking</li>
+                <li>✔ 🛡️ Emergency Red-Flag Triage & 108 Dispatch Alerts</li>
               </ul>
 
               <div className="cta-buttons">
                 <button
                   className="btn-primary"
-                  onClick={() => window.location.href = '/login'}
+                  style={{
+                    background: "#2FBF71",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontWeight: "700",
+                  }}
+                  onClick={() => navigate("/voice")}
                 >
-                  Get Started
+                  <span>🎙️</span> Call AI Voice Line (Demo)
                 </button>
                 <button
                   className="btn-secondary"
-                  onClick={() => window.location.href = '/interview'}
+                  onClick={() => navigate("/interview")}
                 >
-                  Try AI Chat
+                  💬 Try AI Chat Triage
                 </button>
               </div>
 
               <p className="trust-badge">
-                🏥 Trusted by 10,000+ patients • ⭐ 4.8/5 rating
+                🏥 90+ Doctors • 76 Partner Clinics in Kochi • ⭐ 4.9/5 satisfaction
               </p>
             </div>
           </Reveal>
@@ -143,6 +166,136 @@ export default function Home() {
             </div>
           </Reveal>
         </div>
+
+        {/* 🎙️ Voice Hotline Showcase Section */}
+        <Reveal direction="bottom">
+          <section
+            style={{
+              background: "linear-gradient(135deg, #0F3B3D 0%, #09292B 100%)",
+              borderRadius: "24px",
+              padding: "36px 32px",
+              color: "#E7F1EC",
+              margin: "40px 0 50px",
+              boxShadow: "0 20px 40px rgba(15, 59, 61, 0.25)",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "28px",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "rgba(141, 191, 175, 0.2)",
+                  color: "#8DBFAF",
+                  padding: "4px 10px",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  textTransform: "uppercase",
+                  marginBottom: "12px",
+                }}
+              >
+                🎙️ Instant Voice Line · Toll-Free 1800 247 3658
+              </div>
+
+              <h2 style={{ fontSize: "28px", fontWeight: "800", color: "#FFFFFF", marginBottom: "10px" }}>
+                Phone-In AI Doctor Referral & Instant Slot Booking
+              </h2>
+
+              <p style={{ color: "#A7C7BE", fontSize: "15px", lineHeight: "1.5", marginBottom: "20px" }}>
+                Speak directly with <b>Meera</b>. She evaluates symptoms, identifies red-flag emergencies, recommends clinical specialties, queries our database of 90 doctors in Kochi based on your distance and insurance, and automatically registers your appointment!
+              </p>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+                <button
+                  style={{
+                    background: "#2FBF71",
+                    color: "#fff",
+                    border: "none",
+                    padding: "12px 20px",
+                    borderRadius: "10px",
+                    fontWeight: "700",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                  onClick={() => navigate("/voice")}
+                >
+                  ⚡ Launch Voice Split Demo
+                </button>
+
+                <button
+                  style={{
+                    background: "rgba(255, 255, 255, 0.12)",
+                    color: "#fff",
+                    border: "1px solid rgba(255, 255, 255, 0.25)",
+                    padding: "12px 18px",
+                    borderRadius: "10px",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => navigate("/voice/call")}
+                >
+                  📱 Mobile Dial Pad
+                </button>
+
+                <button
+                  style={{
+                    background: "rgba(255, 255, 255, 0.12)",
+                    color: "#fff",
+                    border: "1px solid rgba(255, 255, 255, 0.25)",
+                    padding: "12px 18px",
+                    borderRadius: "10px",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => navigate("/voice/live")}
+                >
+                  🖥️ Live Operator Feed
+                </button>
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(141, 191, 175, 0.2)",
+                borderRadius: "18px",
+                padding: "24px",
+              }}
+            >
+              <h3 style={{ fontSize: "16px", color: "#8DBFAF", marginBottom: "14px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Directory Highlights
+              </h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div style={{ background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "10px" }}>
+                  <div style={{ fontSize: "24px", fontWeight: "800", color: "#2FBF71" }}>90</div>
+                  <div style={{ fontSize: "12px", color: "#A7C7BE" }}>Verified Specialists</div>
+                </div>
+                <div style={{ background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "10px" }}>
+                  <div style={{ fontSize: "24px", fontWeight: "800", color: "#F4C95D" }}>15</div>
+                  <div style={{ fontSize: "12px", color: "#A7C7BE" }}>Kochi Localities</div>
+                </div>
+                <div style={{ background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "10px" }}>
+                  <div style={{ fontSize: "24px", fontWeight: "800", color: "#8DBFAF" }}>76</div>
+                  <div style={{ fontSize: "12px", color: "#A7C7BE" }}>Partner Clinics</div>
+                </div>
+                <div style={{ background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "10px" }}>
+                  <div style={{ fontSize: "24px", fontWeight: "800", color: "#38BDF8" }}>4</div>
+                  <div style={{ fontSize: "12px", color: "#A7C7BE" }}>Languages Spoken</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </Reveal>
 
         {/* How It Works Section */}
         <Reveal direction="bottom">

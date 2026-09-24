@@ -39,13 +39,13 @@ const BUCKET_LABELS = {
 export default function SymptomChecker() {
   const navigate = useNavigate();
 
-  // ── Auth Gate: redirect to login if not authenticated ──────────────
-  useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
-      navigate('/login?redirect=/interview', { replace: true });
-    }
-  }, [navigate]);
+  // ── Auth Gate: temporarily disabled so users land directly on chat without login ──
+  // useEffect(() => {
+  //   const user = getCurrentUser();
+  //   if (!user) {
+  //     navigate('/login?redirect=/interview', { replace: true });
+  //   }
+  // }, [navigate]);
 
   const [selectedBodyPart, setSelectedBodyPart] = useState(null);
   const [bodyPartsData, setBodyPartsData] = useState({});

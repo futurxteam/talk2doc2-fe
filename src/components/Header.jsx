@@ -120,6 +120,36 @@ const toggleMobileMenu = () => {
         <div className="header-center">
           <nav className={`header-nav-menu ${menuOpen ? "header-mobile-active" : ""}`}>
             <ul className="header-nav-links">
+              {/* Voice Line */}
+              <li className="header-nav-item">
+                <Link
+                  to="/voice"
+                  className="header-nav-link"
+                  onClick={closeAllMenus}
+                  style={{
+                    color: "#2FBF71",
+                    fontWeight: "700",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                  }}
+                >
+                  <span style={{ fontSize: "16px" }}>🎙️</span> Voice Line
+                </Link>
+              </li>
+
+              {/* My Appointments */}
+              <li className="header-nav-item">
+                <Link
+                  to="/appointments"
+                  className="header-nav-link"
+                  onClick={closeAllMenus}
+                  style={{ fontWeight: "600" }}
+                >
+                  📅 My Appointments
+                </Link>
+              </li>
+
               {/* About */}
               <li className="header-nav-item">
                 <Link to="/about" className="header-nav-link" onClick={closeAllMenus}>

@@ -17,15 +17,22 @@ import AdminHospitals from "./pages/Admin/AdminHospitals";
 import AdminHospitalDoctors from "./pages/Admin/AdminHospitalDoctors";
 import NearbyClinicsMap from "./pages/nearby";
 import MyAppointments from "./pages/MyAppointments";
+import VoiceSplitDemoPage from "./pages/VoiceSplitDemoPage";
+import VoiceDialerPage from "./pages/VoiceDialerPage";
+import VoiceLiveViewPage from "./pages/VoiceLiveViewPage";
+
 function App() {
   return (
     <LanguageProvider>
       <Router>
-        {/* ✅ Available on all pages */}
+        {/* Default route lands directly on the 24/7 AI Voice Split Demo */}
         <Routes>
-          <Route path="/" element={<Home />} />
-          {/* You can add more pages here like: */}
-          {/* <Route path="/about" element={<About />} /> */}
+          <Route path="/" element={<VoiceSplitDemoPage />} />
+          <Route path="/voice" element={<VoiceSplitDemoPage />} />
+          <Route path="/voice/call" element={<VoiceDialerPage />} />
+          <Route path="/voice/live" element={<VoiceLiveViewPage />} />
+          <Route path="/demo" element={<VoiceSplitDemoPage />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
@@ -38,9 +45,8 @@ function App() {
           <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
           <Route path="/dashboard/admin" element={<AdminDashboard />} />
           <Route path="/admin/patients" element={<AdminPatients />} />
-<Route path="/admin/hospitals" element={<AdminHospitals />} />
-<Route path="/admin/hospitals/:id/doctors" element={<AdminHospitalDoctors />} />
-
+          <Route path="/admin/hospitals" element={<AdminHospitals />} />
+          <Route path="/admin/hospitals/:id/doctors" element={<AdminHospitalDoctors />} />
           <Route path="/dashboard/hospital" element={<HospitalDashboard />} />
         </Routes>
       </Router>
