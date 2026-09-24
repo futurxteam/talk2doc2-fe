@@ -247,6 +247,7 @@ function Signup() {
 
             <div className="terms-content">
               <p>
+
                 By using MyDoktor247, you agree to our terms of service. This platform
                 provides health assistance and is not a replacement for emergency
                 medical services.
