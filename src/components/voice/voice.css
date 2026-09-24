@@ -499,10 +499,10 @@
   animation: shake 0.5s ease-in-out;
 }
 
-/* Call Actions (Mute & End) */
+/* Call Actions (Mute, Skip & End) */
 .incall-actions {
   display: flex;
-  gap: 48px;
+  gap: 28px;
   align-items: center;
   justify-content: center;
   margin-top: auto;
@@ -520,8 +520,8 @@
 .btn-mute {
   background: var(--v-reed-dim);
   color: var(--v-foam);
-  width: 60px;
-  height: 60px;
+  width: 58px;
+  height: 58px;
 }
 
 .btn-mute.is-muted {
@@ -529,11 +529,43 @@
   color: var(--v-lagoon);
 }
 
+.btn-skip {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--v-foam);
+  width: 58px;
+  height: 58px;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  transition: all 0.2s ease;
+}
+
+.btn-skip:hover {
+  background: rgba(255, 255, 255, 0.24);
+  transform: scale(1.05);
+}
+
+.btn-skip:active {
+  transform: scale(0.95);
+}
+
+.btn-skip.is-speaking {
+  background: #f59e0b;
+  color: #fff;
+  border-color: #d97706;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+  animation: pulseSkip 1.5s infinite;
+}
+
+@keyframes pulseSkip {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
 .btn-end {
   background: var(--v-end);
   color: #fff;
-  width: 64px;
-  height: 64px;
+  width: 62px;
+  height: 62px;
 }
 
 .btn-end:hover {

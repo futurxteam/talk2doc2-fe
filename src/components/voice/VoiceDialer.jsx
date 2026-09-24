@@ -17,6 +17,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   const [doctorMatches, setDoctorMatches] = useState(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [textInput, setTextInput] = useState("");
+  const [isAssistantSpeaking, setIsAssistantSpeaking] = useState(false);
 
   // Booking Modal State
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -34,9 +35,11 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   const stopRingRef = useRef(null);
   const timerIntervalRef = useRef(null);
   const meterRafRef = useRef(null);
+  const micMonitorRafRef = useRef(null);
   const delegationsRef = useRef(new Map());
   const transcriptBufferRef = useRef([]);
   const hasGreetedRef = useRef(false);
+  const isAssistantSpeakingRef = useRef(false);
 
   const getAudioContext = () => {
     if (!audioCtxRef.current) {
@@ -380,6 +383,73 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
     });
   };
 
+  // Immediate interruption / barge-in handler
+  const interruptAssistant = () => {
+    console.log("🛑 Interrupting assistant speech!");
+    sendEvent({ type: "response.cancel" });
+
+    // Flush remote audio playback so leftover sentence speech cuts off immediately
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.pause();
+      setTimeout(() => {
+        if (remoteAudioRef.current) {
+          remoteAudioRef.current.play().catch(() => {});
+        }
+      }, 70);
+    }
+
+    isAssistantSpeakingRef.current = false;
+    setIsAssistantSpeaking(false);
+  };
+
+  const manualSkipOrInterrupt = () => {
+    interruptAssistant();
+    setStatusText("Skipped · Listening to you…");
+    sendEvent({
+      type: "response.create",
+      response: {
+        instructions:
+          "The user explicitly interrupted and said to skip. Do not finish previous sentences. Acknowledge in 1-2 words ('Understood', 'Got it') and ask the next concise question without repeating full sentences.",
+      },
+    });
+  };
+
+  // Local microphone volume monitor for zero-latency speech detection
+  const startMicActivityMonitor = (stream) => {
+    try {
+      const ac = getAudioContext();
+      const analyser = ac.createAnalyser();
+      analyser.fftSize = 256;
+      const source = ac.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      const data = new Uint8Array(analyser.fftSize);
+      let lastInterrupted = 0;
+
+      const checkMic = () => {
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (const v of data) {
+          const x = (v - 128) / 128;
+          sum += x * x;
+        }
+        const rms = Math.sqrt(sum / data.length);
+
+        const now = Date.now();
+        // If assistant is actively speaking and caller speaks into mic
+        if (rms > 0.065 && isAssistantSpeakingRef.current && (now - lastInterrupted > 600)) {
+          lastInterrupted = now;
+          console.log("🎙️ Detected caller voice while assistant speaking (RMS:", rms.toFixed(2), ") -> Interrupting!");
+          interruptAssistant();
+        }
+        micMonitorRafRef.current = requestAnimationFrame(checkMic);
+      };
+      checkMic();
+    } catch (e) {
+      console.warn("Could not start mic activity monitor:", e);
+    }
+  };
+
   const onLiveEvent = (evt) => {
     switch (evt.type) {
       case "session.created":
@@ -388,16 +458,38 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
         triggerInitialGreeting();
         break;
 
+      case "input_audio_buffer.speech_started":
+        console.log("🗣️ Speech started detected from caller -> interrupting assistant!");
+        interruptAssistant();
+        break;
+
       case "session.input_transcript.delta":
         if (evt.delta) {
           transcriptBufferRef.current.push({ role: "patient", text: evt.delta });
+          if (isAssistantSpeakingRef.current) {
+            interruptAssistant();
+          }
         }
         break;
 
       case "session.output_transcript.delta":
         if (evt.delta) {
+          isAssistantSpeakingRef.current = true;
+          setIsAssistantSpeaking(true);
           transcriptBufferRef.current.push({ role: "assistant", text: evt.delta });
         }
+        break;
+
+      case "response.audio.delta":
+        isAssistantSpeakingRef.current = true;
+        setIsAssistantSpeaking(true);
+        break;
+
+      case "response.done":
+      case "response.completed":
+      case "output_audio_buffer.stopped":
+        isAssistantSpeakingRef.current = false;
+        setIsAssistantSpeaking(false);
         break;
 
       case "response.event":
@@ -434,6 +526,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
 
   const teardownCall = () => {
     if (meterRafRef.current) cancelAnimationFrame(meterRafRef.current);
+    if (micMonitorRafRef.current) cancelAnimationFrame(micMonitorRafRef.current);
     if (micStreamRef.current) {
       micStreamRef.current.getTracks().forEach((t) => t.stop());
     }
@@ -442,6 +535,8 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
     if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
 
     hasGreetedRef.current = false;
+    isAssistantSpeakingRef.current = false;
+    setIsAssistantSpeaking(false);
     peerRef.current = null;
     eventsRef.current = null;
     micStreamRef.current = null;
@@ -491,6 +586,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
       console.log("🎤 Microphone active:", mic.getAudioTracks().map((t) => t.label).join(", "));
       micStreamRef.current = mic;
       mic.getAudioTracks().forEach((track) => peer.addTrack(track, mic));
+      startMicActivityMonitor(mic);
 
       const events = peer.createDataChannel("oai-events");
       eventsRef.current = events;
@@ -757,6 +853,20 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
                   </svg>
                 </button>
                 <span>{isMuted ? "Unmute" : "Mute"}</span>
+              </div>
+
+              <div className="incall-action-col">
+                <button
+                  className={`btn-circle btn-skip ${isAssistantSpeaking ? "is-speaking" : ""}`}
+                  onClick={manualSkipOrInterrupt}
+                  title="Interrupt or Skip sentences"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polygon points="5 4 15 12 5 20 5 4" fill="currentColor" />
+                    <line x1="19" y1="5" x2="19" y2="19" />
+                  </svg>
+                </button>
+                <span>Skip / Stop</span>
               </div>
 
               <div className="incall-action-col">
