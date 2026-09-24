@@ -510,10 +510,10 @@
   animation: shake 0.5s ease-in-out;
 }
 
-/* Call Actions (Mute, Skip & End) */
+/* Call Actions (Mute & End) */
 .incall-actions {
   display: flex;
-  gap: 28px;
+  gap: 48px;
   align-items: center;
   justify-content: center;
   margin-top: auto;

@@ -40,6 +40,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   const transcriptBufferRef = useRef([]);
   const hasGreetedRef = useRef(false);
   const isAssistantSpeakingRef = useRef(false);
+  const pendingEventsRef = useRef([]);
 
   const getAudioContext = () => {
     if (!audioCtxRef.current) {
@@ -152,10 +153,18 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   }, []);
 
   const sendEvent = (evt) => {
+    const payload = JSON.stringify({ event_id: crypto.randomUUID(), ...evt });
     if (eventsRef.current && eventsRef.current.readyState === "open") {
-      eventsRef.current.send(
-        JSON.stringify({ event_id: crypto.randomUUID(), ...evt })
-      );
+      try {
+        eventsRef.current.send(payload);
+        return true;
+      } catch (err) {
+        console.error("⚠️ Failed to send event to DataChannel:", err);
+      }
+    } else {
+      console.log("⏳ Queueing event until DataChannel opens:", evt.type);
+      pendingEventsRef.current.push(payload);
+      return false;
     }
   };
 
@@ -374,6 +383,22 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
 
     // Immediately trigger Meera to speak her opening greeting in English
     console.log("🗣️ Triggering initial Meera greeting in English...");
+
+    // Send an initial conversation user turn so the realtime model has an active conversation context to respond to
+    sendEvent({
+      type: "conversation.item.create",
+      item: {
+        type: "message",
+        role: "user",
+        content: [
+          {
+            type: "input_text",
+            text: "Hello, I just connected to the call. Please introduce yourself and greet me in English first.",
+          },
+        ],
+      },
+    });
+
     sendEvent({
       type: "response.create",
       response: {
@@ -535,6 +560,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
     if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
 
     hasGreetedRef.current = false;
+    pendingEventsRef.current = [];
     isAssistantSpeakingRef.current = false;
     setIsAssistantSpeaking(false);
     peerRef.current = null;
@@ -545,6 +571,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
 
   const startCall = async () => {
     hasGreetedRef.current = false;
+    pendingEventsRef.current = [];
     setErrorMsg("");
     setEmergencyAlert(false);
     setScreen("call");
@@ -592,7 +619,17 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
       eventsRef.current = events;
       events.onopen = () => {
         console.log("🟢 DataChannel 'oai-events' is OPEN");
-        setTimeout(() => triggerInitialGreeting(), 300);
+        // Flush any queued events
+        while (pendingEventsRef.current.length > 0) {
+          const item = pendingEventsRef.current.shift();
+          try {
+            console.log("🚀 Sending queued event to DataChannel:", item);
+            events.send(item);
+          } catch (e) {
+            console.error("Error flushing queued event:", e);
+          }
+        }
+        setTimeout(() => triggerInitialGreeting(), 200);
       };
       events.onclose = () => console.log("🔴 DataChannel 'oai-events' CLOSED");
       events.onerror = (err) => console.error("⚠️ DataChannel ERROR:", err);
@@ -600,8 +637,13 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
       events.addEventListener("message", ({ data }) => {
         try {
           const evt = JSON.parse(data);
+          if (evt.type === "error" || evt.error) {
+            console.error("❌ Live event error from OpenAI/Server:", evt);
+          }
           onLiveEvent(evt);
-        } catch (_) { }
+        } catch (err) {
+          console.error("⚠️ Error parsing live event data:", err);
+        }
       });
 
       const offer = await peer.createOffer();
@@ -853,20 +895,6 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
                   </svg>
                 </button>
                 <span>{isMuted ? "Unmute" : "Mute"}</span>
-              </div>
-
-              <div className="incall-action-col">
-                <button
-                  className={`btn-circle btn-skip ${isAssistantSpeaking ? "is-speaking" : ""}`}
-                  onClick={manualSkipOrInterrupt}
-                  title="Interrupt or Skip sentences"
-                >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polygon points="5 4 15 12 5 20 5 4" fill="currentColor" />
-                    <line x1="19" y1="5" x2="19" y2="19" />
-                  </svg>
-                </button>
-                <span>Skip / Stop</span>
               </div>
 
               <div className="incall-action-col">
