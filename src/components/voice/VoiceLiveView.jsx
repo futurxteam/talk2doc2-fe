@@ -195,44 +195,21 @@ export default function VoiceLiveView({ sessionId: propSessionId }) {
 
   return (
     <div className="live-pane">
-      <div className="pane-label">
-        🖥️ Live View <span>Clinical Intelligence Monitor</span>
-      </div>
+
 
       <div className="live-card">
         <div className="live-header">
           <h2>
             <span> Meera</span>
             <small style={{ fontSize: 13, color: "var(--v-muted)", fontWeight: 500 }}>
-              Live Clinical Feed ·
+              Live Feed ·
             </small>
           </h2>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            {activeSessionId && (
-              <button
-                type="button"
-                className="sound-toggle-btn"
-                style={{ background: "#eef7f3", color: "#0F3B3D", borderColor: "#cce8dc" }}
-                onClick={() => {
-                  const shareUrl = `${window.location.origin}/voice/live?session=${encodeURIComponent(activeSessionId)}`;
-                  navigator.clipboard?.writeText(shareUrl);
-                  setCopiedLink(true);
-                  setTimeout(() => setCopiedLink(false), 2000);
-                }}
-                title="Copy observer link to view this call on another device"
-              >
-                {copiedLink ? "✓ Link Copied!" : "🔗 Share Observer Link"}
-              </button>
-            )}
 
-            <button
-              className="sound-toggle-btn"
-              onClick={toggleSound}
-              aria-pressed={soundEnabled}
-            >
-              {soundEnabled ? "🔊 Sound Chimes ON" : "🔇 Sound Alerts OFF"}
-            </button>
+
+
           </div>
         </div>
 
@@ -240,16 +217,13 @@ export default function VoiceLiveView({ sessionId: propSessionId }) {
           <div className="empty-live-state">
             <span className="pulse-dot"></span>
             <h3 style={{ fontSize: 20, color: "var(--v-ink)", marginBottom: 8 }}>
-              No Active Clinical Call
+              No Active Call
             </h3>
-            <p style={{ maxWidth: 440, margin: "0 auto", lineHeight: 1.5, fontSize: 14 }}>
-              When a caller dials <b>1800 247 3658</b>, you will see real-time speech transcripts,
-              recommended medical specialties, location matching, and automated booking receipts.
-            </p>
+
           </div>
         ) : (
           <div className="live-grid">
-            {/* Left Column: Clinical Assessment & Matches */}
+            {/* Left Column: Assessment & Matches */}
             <div className="live-col">
               {/* Emergency Banner */}
               {emergency && (

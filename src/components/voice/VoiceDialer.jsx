@@ -762,7 +762,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
   return (
     <div className="phone-pane">
       <div className="pane-label">
-        📞 Caller View <span>phoning MyDoktor 24/7 AI Line</span>
+        <span> MyDoktor 24/7 AI </span>
       </div>
 
       <div className="phone-shell">
@@ -773,7 +773,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
           /* ================= DIALER SCREEN ================= */
           <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
             <div className="phone-top-bar">
-              <p className="phone-app-title">Mydoktor 24/7 AI Medical Line</p>
+              <p className="phone-app-title">Mydoktor 24/7 AI </p>
               <p className="phone-display-number">{displayNumber || " "}</p>
             </div>
 
@@ -827,9 +827,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
               </button>
             </div>
 
-            <p className="phone-helper-hint">
-              Speak with Meera, our clinical AI assistant, who finds the right specialist and registers your appointment.
-            </p>
+
 
             {errorMsg && (
               <p style={{ color: "#FF8E8E", fontSize: 13, textAlign: "center", marginTop: 10 }}>

@@ -162,31 +162,31 @@ function PatientDashboard() {
       <main className="pd-main">
         {activeSection === "interview" ? (
           <div className="pd-interview-card">
-  <div className="pd-particles">
-  {Array.from({ length: 20 }).map((_, i) => (
-    <span 
-      key={i} 
-      className="pd-particle"
-      style={{
-        left: `${Math.random() * 100}%`,
-        animationDelay: `${Math.random() * 5}s`,
-        animationDuration: `${6 + Math.random() * 10}s`
-      }}
-    ></span>
-  ))}
-</div>
+            <div className="pd-particles">
+              {Array.from({ length: 20 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="pd-particle"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 5}s`,
+                    animationDuration: `${6 + Math.random() * 10}s`
+                  }}
+                ></span>
+              ))}
+            </div>
 
-  <div className="pd-interview-content">
-    <span className="pd-tag">Assess your symptoms</span>
-    <h2>Analyze Your Symptoms with AI</h2>
-    <p>Get a preliminary diagnosis and recommendations instantly.</p>
-    <button className="pd-btn-interview" onClick={() => navigate("/interview")}>
-      Start Interview
-    </button>
-  </div>
+            <div className="pd-interview-content">
+              <span className="pd-tag">Assess your symptoms</span>
+              <h2>Analyze Your Symptoms with AI</h2>
+              <p>Get a preliminary diagnosis and recommendations instantly.</p>
+              <button className="pd-btn-interview" onClick={() => navigate("/interview")}>
+                Start Interview
+              </button>
+            </div>
 
-  <div className="pd-interview-img"></div>
-</div>
+            <div className="pd-interview-img"></div>
+          </div>
 
         ) : activeSection === "history" ? (
           <div className="pd-section">
@@ -217,7 +217,7 @@ function PatientDashboard() {
                     item.results?.[0]?.name
                       ?.replace(/_/g, " ")
                       ?.toUpperCase() ||
-                    "Clinical Assessment"}
+                    "Assessment"}
                 </h3>
 
                 <div className="pd-report-content" style={{ marginTop: 12, fontSize: '0.9rem', color: '#334155' }}>
@@ -234,11 +234,11 @@ function PatientDashboard() {
                     )}
                     <div>
                       <span style={{ fontSize: '0.72rem', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Urgency Level</span>
-                      <span style={{ 
-                        display: 'inline-block', 
-                        padding: '2px 8px', 
-                        borderRadius: '4px', 
-                        fontSize: '0.75rem', 
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '0.75rem',
                         fontWeight: 600,
                         background: item.emergency || item.urgencyLevel === 'EMERGENCY' ? '#fee2e2' : item.urgencyLevel === 'URGENT' || item.urgencyLevel === 'PRIORITY' ? '#fef3c7' : '#e0f2fe',
                         color: item.emergency || item.urgencyLevel === 'EMERGENCY' ? '#dc2626' : item.urgencyLevel === 'URGENT' || item.urgencyLevel === 'PRIORITY' ? '#b45309' : '#0369a1'
@@ -262,7 +262,7 @@ function PatientDashboard() {
 
                   {(item.collected?.clinicalSummary || item.reportData?.reason) && (
                     <div style={{ marginBottom: '10px' }}>
-                      <strong style={{ fontSize: '0.8rem', color: '#475569' }}>Clinical Indication:</strong>
+                      <strong style={{ fontSize: '0.8rem', color: '#475569' }}>Indication:</strong>
                       <p style={{ margin: '4px 0', color: '#334155', lineHeight: '1.4', fontSize: '0.85rem' }}>
                         {item.collected?.clinicalSummary || item.reportData?.reason}
                       </p>

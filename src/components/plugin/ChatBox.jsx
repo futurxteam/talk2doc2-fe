@@ -338,7 +338,7 @@ export default function ChatBox({
     currentNode: null,
     answersMap: {},     // { nodeId: answer(s) }
     pendingMultiSelect: [],  // accumulates multi-select answers before confirm
-    // Clinical follow-up profile state
+    // follow-up profile state
     profileId: null,
     profileQuestionIndex: 0,
     profileAnswers: {}
@@ -422,7 +422,7 @@ export default function ChatBox({
   const persistTriageReport = async (rec, currentData) => {
     if (!rec) return;
     const token = localStorage.getItem("token");
-    const symptomName = rec.primarySymptom || rec.symptomName || currentData?.symptomName || "Clinical Evaluation";
+    const symptomName = rec.primarySymptom || rec.symptomName || currentData?.symptomName || "Evaluation";
     const bodyArea = rec.bodyAreaName || rec.bodyArea || currentData?.bodyArea || "";
     const department = rec.department || "General Medicine";
     const altDepartment = rec.altDepartment || rec.alternativeDepartment || "Primary Care / Internal Medicine";
@@ -491,7 +491,7 @@ export default function ChatBox({
           setAvailableInsurances(data.providers.map(p => typeof p === 'string' ? p : p.name || p));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -1242,7 +1242,7 @@ export default function ChatBox({
   const matchRadiusIntent = (q) => {
     const l = q.toLowerCase();
     const m = l.match(/(?:radius|distance|within|nearby|range)\s*(?:of|is|to|=)?\s*(\d+)/i) ||
-              l.match(/(\d+)\s*(?:km|kilometers|kms)/i);
+      l.match(/(\d+)\s*(?:km|kilometers|kms)/i);
     if (m && m[1]) {
       const val = parseInt(m[1], 10);
       if (val >= 1 && val <= 100) return val;
@@ -1271,7 +1271,7 @@ export default function ChatBox({
   const matchDoctorSelectIntent = (q, doctorList = []) => {
     const l = q.toLowerCase();
     const numMatch = l.match(/(?:doctor|option|number|#|select|choose)\s*(\d+)/i) ||
-                     l.match(/^(\d+)$/);
+      l.match(/^(\d+)$/);
     if (numMatch && numMatch[1]) {
       const idx = parseInt(numMatch[1], 10) - 1;
       if (idx >= 0 && idx < doctorList.length) {
@@ -1384,7 +1384,7 @@ export default function ChatBox({
         department: 'General Medicine',
         altDepartment: 'Primary Care / Internal Medicine',
         bodyAreaName: 'General / Multi-System',
-        symptomName: 'General Clinical Evaluation',
+        symptomName: 'General Evaluation',
         urgency: 'ROUTINE',
         duration: 'Not specified',
         severity: 'moderate',
@@ -1463,7 +1463,7 @@ export default function ChatBox({
         }
       }
 
-      // Check if this symptom has a clinical follow-up profile that does NOT require duration
+      // Check if this symptom has a follow-up profile that does NOT require duration
       const resolvedProfile = resolveFollowUpProfile(symptom.id, symptom.label);
       if (resolvedProfile?.profile?.requiresDuration === false && resolvedProfile.profile.questions?.length > 0) {
         updateTriageData(prev => ({
@@ -1679,8 +1679,8 @@ export default function ChatBox({
         symptomArea: triageData.symptomName ? undefined : (bodyArea || 'Head & Neck'),
         symptomName: triageData.symptomName || 'Headache / General Symptoms',
         urgency: 'ROUTINE',
-        reason: 'When symptoms are mixed or non-emergency, a General Medicine physician performs initial clinical examination and baseline tests to initiate care or recommend appropriate sub-specialists.',
-        advice: 'Consult a primary care physician / internist for clinical evaluation.'
+        reason: 'When symptoms are mixed or non-emergency, a General Medicine physician performs initial examination and baseline tests to initiate care or recommend appropriate sub-specialists.',
+        advice: 'Consult a primary care physician / internist for evaluation.'
       };
       presentTriageAndDoctors(fallbackRec, 'Based on your symptoms, here is your recommended specialty department for consultation:');
     }
@@ -1716,7 +1716,7 @@ export default function ChatBox({
       setTimeout(async () => {
         setIsTyping(false);
 
-        // Check if this symptom has a clinical follow-up profile
+        // Check if this symptom has a follow-up profile
         const resolved = resolveFollowUpProfile(updatedTriage.symptomId, updatedTriage.symptomName);
         if (resolved?.profile?.questions?.length > 0) {
           updateTriageData(prev => ({
@@ -2224,7 +2224,7 @@ export default function ChatBox({
     }
 
     // ==========================================
-    // 1.5. CLINICAL PROFILE QUESTION
+    // 1.5. PROFILE QUESTION
     // ==========================================
     if (stepNow === 'profile_question') {
       const profile = followUpProfiles?.[triageNow.profileId];
@@ -2387,7 +2387,7 @@ export default function ChatBox({
     }
 
     // ==========================================
-    // 4. AI CLINICAL EXTRACTION
+    // 4. AI EXTRACTION
     // ==========================================
     setIsAiProcessing(true);
     setIsTyping(true);
@@ -2563,7 +2563,7 @@ export default function ChatBox({
               }
             }
 
-            // Clinical profile check if no decision tree
+            // profile check if no decision tree
             const resolvedProf = resolveFollowUpProfile(foundSymptom.id, foundSymptom.label);
             if (resolvedProf?.profile?.requiresDuration === false && resolvedProf.profile.questions?.length > 0) {
               updateTriageData(prev => ({
@@ -3248,10 +3248,10 @@ export default function ChatBox({
                     ? 'Type "book appointment", "change doctor", or "radius 15km"...'
                     : currentStep === 'result'
                       ? (convLangRef.current === 'malayalam' || convLangRef.current === 'malayalam_script'
-                          ? "കൺസൾട്ടേഷൻ പൂർത്തിയായി. വീണ്ടും തുടങ്ങാൻ 'Start Over' ക്ലിക്ക് ചെയ്യുക."
-                          : convLangRef.current === 'manglish'
-                            ? "Consultation kazhinju. Vere chothikkan 'Start Over' click cheyyuka."
-                            : "Consultation complete. Click 'Start Over' to assess another symptom.")
+                        ? "കൺസൾട്ടേഷൻ പൂർത്തിയായി. വീണ്ടും തുടങ്ങാൻ 'Start Over' ക്ലിക്ക് ചെയ്യുക."
+                        : convLangRef.current === 'manglish'
+                          ? "Consultation kazhinju. Vere chothikkan 'Start Over' click cheyyuka."
+                          : "Consultation complete. Click 'Start Over' to assess another symptom.")
                       : isListening
                         ? 'Listening to speech... Speak now'
                         : currentStep === 'body_area'
@@ -3309,18 +3309,18 @@ export default function ChatBox({
                 voiceStatus === 'thinking' ? 'One moment...' :
                   voiceStatus === 'speaking' ? 'Talk2Doc is speaking...' :
                     currentStep === 'doctor_selected' ? 'Doctor Selected!' :
-                    currentStep === 'doctor_selection' ? 'Select Your Doctor' :
-                    currentStep === 'result' ? 'All done!' : 'Tap the sphere or speak'}
+                      currentStep === 'doctor_selection' ? 'Select Your Doctor' :
+                        currentStep === 'result' ? 'All done!' : 'Tap the sphere or speak'}
             </p>
             <p className="voice-agent-status-text">
               {voiceTranscript
                 ? `"${voiceTranscript}"`
                 : voiceStatus === 'listening'
                   ? (currentStep === 'doctor_selection'
-                      ? 'Say "select doctor 1", doctor name, or "radius 20km"'
-                      : currentStep === 'doctor_selected'
-                        ? 'Say "book appointment" or "change doctor"'
-                        : 'Speak naturally — I understand simple words too!')
+                    ? 'Say "select doctor 1", doctor name, or "radius 20km"'
+                    : currentStep === 'doctor_selected'
+                      ? 'Say "book appointment" or "change doctor"'
+                      : 'Speak naturally — I understand simple words too!')
                   : voiceStatus === 'thinking'
                     ? 'Analyzing what you said...'
                     : voiceStatus === 'speaking'
@@ -3499,10 +3499,10 @@ export default function ChatBox({
               <span>
                 {currentStep === 'result'
                   ? (convLangRef.current === 'malayalam' || convLangRef.current === 'malayalam_script'
-                      ? 'കൺസൾട്ടേഷൻ പൂർത്തിയായി • പുതിയ വിലയിരുത്തലിനായി Start Over അമർത്തുക'
-                      : convLangRef.current === 'manglish'
-                        ? 'Consultation kazhinju • Start Over click cheyyuka'
-                        : 'Consultation complete • Tap Start Over to assess another symptom')
+                    ? 'കൺസൾട്ടേഷൻ പൂർത്തിയായി • പുതിയ വിലയിരുത്തലിനായി Start Over അമർത്തുക'
+                    : convLangRef.current === 'manglish'
+                      ? 'Consultation kazhinju • Start Over click cheyyuka'
+                      : 'Consultation complete • Tap Start Over to assess another symptom')
                   : isListening
                     ? 'Listening automatically... Speak naturally'
                     : voiceStatus === 'speaking'

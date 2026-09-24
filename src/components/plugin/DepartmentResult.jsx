@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  LuStethoscope, 
-  LuTriangleAlert, 
-  LuRotateCcw, 
-  LuCircleCheck, 
-  LuClock, 
-  LuActivity, 
+import {
+  LuStethoscope,
+  LuTriangleAlert,
+  LuRotateCcw,
+  LuCircleCheck,
+  LuClock,
+  LuActivity,
   LuShieldAlert,
   LuArrowDown,
   LuCalendar
@@ -25,12 +25,12 @@ const LABELS = {
     whyChosen: 'Why this department was chosen',
     primaryIndication: 'Primary Indication',
     specialistScope: 'Specialist Scope',
-    clinicalContext: 'Clinical Context',
-    guidanceTitle: 'Clinical Guidance & Next Steps',
+    clinicalContext: 'Context',
+    guidanceTitle: 'Guidance & Next Steps',
     viewDoctors: 'View Matching Doctors Below',
     startOver: 'Start Over',
     criticalAlert: 'CRITICAL MEDICAL ALERT',
-    disclaimer: 'Note: talk2doc provides specialty navigation and clinical triage, not formal medical diagnosis. In case of severe emergency, contact local emergency services immediately.'
+    disclaimer: 'Note: talk2doc provides specialty navigation and triage, not formal medical diagnosis. In case of severe emergency, contact local emergency services immediately.'
   },
   manglish: {
     routine: 'Routine Consultation (Sadharana)',
@@ -189,11 +189,11 @@ export default function DepartmentResult({ recommendation, onReset, lang = 'engl
           <LuCircleCheck size={18} className="title-icon icon-blue" />
           <span>{t.whyChosen}</span>
         </div>
-        
+
         <div className="why-clinical-grid">
           <div className="why-item">
             <span className="why-item-badge">{t.primaryIndication}</span>
-            <p><strong>{symptomName}</strong> localized in the <strong>{displayArea}</strong> region directly indicates clinical evaluation by <strong>{department}</strong> specialists.</p>
+            <p><strong>{symptomName}</strong> localized in the <strong>{displayArea}</strong> region directly indicates evaluation by <strong>{department}</strong> specialists.</p>
           </div>
 
           <div className="why-item">
@@ -206,7 +206,7 @@ export default function DepartmentResult({ recommendation, onReset, lang = 'engl
               <span className="why-item-badge">{t.clinicalContext}</span>
               <p>
                 {duration ? `Reported progression: ${duration}. ` : ''}
-                {severity ? `Assessed as ${severity.toUpperCase()} intensity, matching ${urgency === 'EMERGENCY' ? 'urgent emergency intervention' : urgency === 'PRIORITY' ? 'prompt specialist consultation' : 'routine clinical examination'}.` : ''}
+                {severity ? `Assessed as ${severity.toUpperCase()} intensity, matching ${urgency === 'EMERGENCY' ? 'urgent emergency intervention' : urgency === 'PRIORITY' ? 'prompt specialist consultation' : 'routine examination'}.` : ''}
               </p>
             </div>
           )}

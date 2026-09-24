@@ -1,5 +1,5 @@
 /**
- * Clinical Symptom & Body Area Synonym Dictionary
+ * Symptom & Body Area Synonym Dictionary
  * Maps natural, colloquial expressions (including Indian English) to structured triage keys
  */
 

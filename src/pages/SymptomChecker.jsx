@@ -351,7 +351,7 @@ export default function SymptomChecker() {
               <div className="brand-name">
                 MyDoktor <span className="brand-accent">24/7</span> <span className="version-pill">2.0</span>
               </div>
-              <div className="brand-tagline">Clinical Triage & Specialist Recommendation</div>
+              <div className="brand-tagline">Triage & Specialist Recommendation</div>
             </div>
           </div>
 
@@ -474,7 +474,7 @@ export default function SymptomChecker() {
                 <LuStethoscope size={24} />
               </div>
               <div className="header-text-group">
-                <div className="header-tag">Clinical Referrals & Nearby Hospitals</div>
+                <div className="header-tag">Referrals & Nearby Hospitals</div>
                 <h2>
                   {isFallback
                     ? `Recommended Physicians for ${currentRecommendation.department} Triage`
@@ -549,7 +549,7 @@ export default function SymptomChecker() {
                 </div>
                 <div className="notice-content">
                   <strong>Specialty Directory Notice</strong>
-                  <p>{fallbackMessage || `No direct ${currentRecommendation.department} specialists are currently registered online. Our General Medicine physicians are ready to perform baseline clinical triage, diagnostic screening, and formal hospital referrals.`}</p>
+                  <p>{fallbackMessage || `No direct ${currentRecommendation.department} specialists are currently registered online. Our General Medicine physicians are ready to perform baseline triage, diagnostic screening, and formal hospital referrals.`}</p>
                 </div>
               </div>
             )}
@@ -622,7 +622,7 @@ export default function SymptomChecker() {
                   No registered practitioners are currently listed specifically under <strong>{currentRecommendation.department}</strong>.
                 </p>
                 <p className="no-doctors-hint">
-                  You can consult our <strong>General Medicine</strong> practitioners for an initial clinical evaluation and referral.
+                  You can consult our <strong>General Medicine</strong> practitioners for an initial evaluation and referral.
                 </p>
                 <button
                   className="fallback-btn"
@@ -641,7 +641,7 @@ export default function SymptomChecker() {
       <footer className="app-footer">
         <div className="footer-content">
           <p>
-            <strong>Medical Disclaimer:</strong> talk2doc clinical triage provides educational guidance and department recommendations. It is not an alternative to emergency medical diagnosis. If experiencing sudden chest pain, loss of consciousness, or breathing difficulty, immediately dial <strong>108 / 112</strong> or proceed to the nearest emergency department.
+            <strong>Medical Disclaimer:</strong> talk2doc triage provides educational guidance and department recommendations. It is not an alternative to emergency medical diagnosis. If experiencing sudden chest pain, loss of consciousness, or breathing difficulty, immediately dial <strong>108 / 112</strong> or proceed to the nearest emergency department.
           </p>
         </div>
       </footer>

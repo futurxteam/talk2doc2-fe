@@ -82,7 +82,7 @@ export default function Home() {
               </h1>
 
               <p>
-                Experience the future of healthcare with <strong>Talk2Doc</strong>. Dial our 24/7 AI voice line to speak with Meera in English, Malayalam, Hindi or Tamil, get clinical specialist referrals across 90+ doctors in Kochi, and book your appointment automatically.
+                Experience the future of healthcare with <strong>Talk2Doc</strong>. Dial our 24/7 AI voice line to speak with Meera in English, Malayalam, Hindi or Tamil, get specialist referrals across 90+ doctors in Kochi, and book your appointment automatically.
               </p>
 
               <ul className="feature-list">
@@ -132,7 +132,7 @@ export default function Home() {
                     </div>
                     <div>
                       <h4>FutuRx talk2doc Assistant</h4>
-                      <span>Instant Clinical Specialty Triage</span>
+                      <span>Instant Specialty Triage</span>
                     </div>
                   </div>
                   <div className="modal-header-actions">
@@ -207,7 +207,7 @@ export default function Home() {
               </h2>
 
               <p style={{ color: "#A7C7BE", fontSize: "15px", lineHeight: "1.5", marginBottom: "20px" }}>
-                Speak directly with <b>Meera</b>. She evaluates symptoms, identifies red-flag emergencies, recommends clinical specialties, queries our database of 90 doctors in Kochi based on your distance and insurance, and automatically registers your appointment!
+                Speak directly with <b>Meera</b>. She evaluates symptoms, identifies red-flag emergencies, recommends specialties, queries our database of 90 doctors in Kochi based on your distance and insurance, and automatically registers your appointment!
               </p>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
