@@ -301,7 +301,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
     }
 
     if (item.name === "book_appointment") {
-      setStatusText("Registering Talk2Doc appointment…");
+      setStatusText("Registering MyDoktor 24/7 appointment…");
       const res = await fetch(`${API_BASE_URL}/api/voice/book`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -393,7 +393,7 @@ export default function VoiceDialer({ onCallChange, sessionId: propSessionId }) 
       remoteAudioRef.current.pause();
       setTimeout(() => {
         if (remoteAudioRef.current) {
-          remoteAudioRef.current.play().catch(() => {});
+          remoteAudioRef.current.play().catch(() => { });
         }
       }, 70);
     }

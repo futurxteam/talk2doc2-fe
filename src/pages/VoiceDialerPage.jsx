@@ -25,7 +25,21 @@ export default function VoiceDialerPage() {
         padding: "20px 16px",
       }}
     >
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 14 }}>
+        <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <img
+            src="/logo.jpg"
+            alt="MyDoktor 24/7"
+            style={{
+              height: 34,
+              borderRadius: 6,
+              background: "#ffffff",
+              padding: "2px 6px",
+              objectFit: "contain",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.18)",
+            }}
+          />
+        </Link>
         <Link
           to="/"
           style={{
@@ -38,7 +52,7 @@ export default function VoiceDialerPage() {
             gap: 6,
           }}
         >
-          ← Return to Talk2Doc
+          ← Return to MyDoktor 24/7
         </Link>
       </div>
 

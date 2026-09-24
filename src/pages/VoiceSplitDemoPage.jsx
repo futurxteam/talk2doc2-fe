@@ -19,7 +19,19 @@ export default function VoiceSplitDemoPage() {
       {/* Top Navigation Bar */}
       <header className="voice-demo-header">
         <div className="voice-brand-logo">
-          <span>MyDoktor24/7 · Voice Hotline</span>
+          <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", gap: 10 }}>
+            <img
+              src="/logo.jpg"
+              alt="MyDoktor 24/7 Logo"
+              className="voice-header-logo-img"
+            />
+            <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+
+              <span style={{ fontSize: 10, color: "var(--v-reed)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Voice Hotline
+              </span>
+            </div>
+          </Link>
           <span className="voice-brand-badge">24/7 AI Triage & Booking</span>
         </div>
 

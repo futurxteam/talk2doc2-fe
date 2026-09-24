@@ -76,8 +76,19 @@ function Login() {
         </button>
 
         <div className="login-header">
-          
-         <img src="/Talk2Doc.png" alt="Talk2Doc 24/7" className="login-logo" />
+          <img
+            src="/logo.jpg"
+            alt="MyDoktor 24/7"
+            className="login-logo"
+            style={{
+              height: 48,
+              borderRadius: 8,
+              background: "#ffffff",
+              padding: "4px 8px",
+              objectFit: "contain",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+            }}
+          />
 
           <p>{t("login.subtitle")}</p>
         </div>

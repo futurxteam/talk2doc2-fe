@@ -334,13 +334,22 @@ export default function SymptomChecker() {
       {/* Modern Navigation Header */}
       <header className="app-navbar">
         <div className="navbar-container">
-          <div className="brand-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <div className="brand-icon">
-              <LuActivity size={24} />
-            </div>
+          <div className="brand-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <img
+              src="/logo.jpg"
+              alt="MyDoktor 24/7"
+              style={{
+                height: 38,
+                borderRadius: 8,
+                background: "#ffffff",
+                padding: "2px 6px",
+                objectFit: "contain",
+                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+              }}
+            />
             <div>
               <div className="brand-name">
-                FutuRx <span className="brand-accent">talk2doc</span> <span className="version-pill">2.0</span>
+                MyDoktor <span className="brand-accent">24/7</span> <span className="version-pill">2.0</span>
               </div>
               <div className="brand-tagline">Clinical Triage & Specialist Recommendation</div>
             </div>

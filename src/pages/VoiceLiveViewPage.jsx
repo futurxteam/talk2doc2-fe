@@ -15,7 +15,32 @@ export default function VoiceLiveViewPage() {
         padding: "24px 20px",
       }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto 16px" }}>
+      <div
+        style={{
+          maxWidth: 1200,
+          margin: "0 auto 16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", gap: 10 }}>
+          <img
+            src="/logo.jpg"
+            alt="MyDoktor 24/7"
+            style={{
+              height: 36,
+              borderRadius: 6,
+              background: "#ffffff",
+              padding: "2px 6px",
+              objectFit: "contain",
+              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+            }}
+          />
+        </Link>
+
         <Link
           to="/"
           style={{
@@ -28,7 +53,7 @@ export default function VoiceLiveViewPage() {
             gap: 6,
           }}
         >
-          ← Return to Talk2Doc Dashboard
+          ← Return to Dashboard
         </Link>
       </div>
 

@@ -111,8 +111,18 @@ const toggleMobileMenu = () => {
         {/* LEFT SECTION: LOGO */}
         <div className="header-left">
           <Link to="/" className="header-brand-logo-link" onClick={closeAllMenus}>
-            {/* Assuming Talk2Doc.png is the logo like 'Besnik' */}
-            <img src="/Talk2Doc.png" alt="Talk2Doc" className="header-logo-image" />
+            <img
+              src="/logo.jpg"
+              alt="MyDoktor 24/7"
+              className="header-logo-image"
+              style={{
+                borderRadius: 6,
+                background: "#ffffff",
+                padding: "2px 6px",
+                objectFit: "contain",
+                boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+              }}
+            />
           </Link>
         </div>
 

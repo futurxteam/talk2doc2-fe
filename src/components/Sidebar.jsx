@@ -35,7 +35,18 @@ const Sidebar = ({ activeSection, setActiveSection, onLogout, onStartInterview }
       <aside className={`new-sidebar ${isOpen ? "open" : ""}`}>
         {/* BRAND & USER */}
         <div className="new-sidebar-header">
-          <img src="/Talk2Doc.png" alt="Talk2Doc Logo" className="new-sidebar-logo" />
+          <img
+            src="/logo.jpg"
+            alt="MyDoktor 24/7 Logo"
+            className="new-sidebar-logo"
+            style={{
+              height: 36,
+              borderRadius: 6,
+              background: "#ffffff",
+              padding: "2px 6px",
+              objectFit: "contain",
+            }}
+          />
           <div className="new-sidebar-avatar">
             {user?.name?.[0] || "U"}
           </div>

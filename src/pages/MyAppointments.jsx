@@ -145,13 +145,25 @@ export default function MyAppointments() {
           </Link>
 
           <div className="nav-brand">
-            <div className="brand-badge-icon">
-              <LuShieldCheck />
-            </div>
-            <div className="brand-text-group">
-              <span className="brand-title">Talk2Doc</span>
-              <span className="brand-sub">My Bookings</span>
-            </div>
+            <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", gap: 10 }}>
+              <img
+                src="/logo.jpg"
+                alt="MyDoktor 24/7"
+                style={{
+                  height: 34,
+                  borderRadius: 8,
+                  background: "#ffffff",
+                  padding: "2px 6px",
+                  objectFit: "contain",
+                  boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)",
+                  border: "1px solid rgba(0, 0, 0, 0.06)",
+                }}
+              />
+              <div className="brand-text-group">
+                <span className="brand-title">MyDoktor 24/7</span>
+                <span className="brand-sub">My Bookings</span>
+              </div>
+            </Link>
           </div>
 
           <Link to="/voice" className="nav-voice-pill">

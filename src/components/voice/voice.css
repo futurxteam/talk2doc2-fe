@@ -47,6 +47,17 @@
   letter-spacing: -0.01em;
 }
 
+.voice-header-logo-img {
+  height: 38px;
+  width: auto;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 2px 6px;
+  object-fit: contain;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  display: block;
+}
+
 .voice-brand-badge {
   background: rgba(141, 191, 175, 0.2);
   color: var(--v-reed);
@@ -1013,6 +1024,12 @@
     gap: 4px;
     min-width: 0;
     flex: 1;
+  }
+
+  .voice-header-logo-img {
+    height: 32px;
+    padding: 2px 4px;
+    border-radius: 6px;
   }
 
   .voice-brand-logo span:first-child {
