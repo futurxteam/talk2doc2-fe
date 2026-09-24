@@ -10,7 +10,7 @@ export default function Avatar({ onSelect }) {
             left_arm: "muscles", right_arm: "muscles",
             left_forearm: "muscles", right_forearm: "muscles",
             left_hand: "joints", right_hand: "joints",
-            left_thigh: "joints", right_thigh: "joints",
+            left_thigh: "joints", right_thigh: "jo ints",
             left_leg: "joints", right_leg: "joints",
 
             left_foot: "joints", right_foot: "joints",
